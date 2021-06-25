@@ -26,6 +26,9 @@ const run = async () => {
   const server = express();
 
   server.all('*', (req, res) => {
+    if (req.path === "/args/root") {
+        return res.send(resolvedRoot);
+    }
     return handle(req, res);
   });
 
