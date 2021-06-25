@@ -85,7 +85,29 @@ function App() {
   }, []);
 
   return (
-    <Box padding={5} display="flex" flexDirection="column" height="100%">
+    <Box padding={5} display="flex" flexDirection="column" height="0%">
+      <Box display="flex" flexDirection="row" p={1} m={1} bgcolor="background.paper">
+        <Box p={1} bgcolor="grey.300">
+          Item 1
+        </Box>
+        <Box p={1} bgcolor="grey.300">
+          Item 2
+        </Box>
+        <Box p={1} bgcolor="grey.300">
+          Item 3
+        </Box>
+      </Box>
+      <Box display="flex" flexDirection="row-reverse" p={1} m={1} bgcolor="background.paper">
+        <Box p={1} bgcolor="grey.300">
+          Item 1
+        </Box>
+        <Box p={1} bgcolor="grey.300">
+          Item 2
+        </Box>
+        <Box p={1} bgcolor="grey.300">
+          Item 3
+        </Box>
+      </Box>
       <Box display="flex" flex="0 0 auto" justifyContent="space-between" alignItems="center" mb={4}>
         <Box display="flex" flex="0 0 auto" alignItems="center">
           <Logo className={classes.logo} />
@@ -116,15 +138,7 @@ function App() {
                 <Box display="flex" alignItems="center" flex="1">
                   <ListItemText className={classes.shortcutCmd}>
                     <Typography color="secondary">
-                      <Box
-                        component="span"
-                        // border={1}
-                        // padding={1}
-                        // borderRadius="borderRadius"
-                        // borderColor="text.primary"
-                      >
-                        {cmd}
-                      </Box>
+                      <Box component="span">{cmd}</Box>
                     </Typography>
                   </ListItemText>
                   <ListItemText primary={desc} />
@@ -144,16 +158,18 @@ function App() {
           </List>
         </Popover>
       </Box>
-      {loading ? (
-        <Typography component="div" variant="h4">
-          <Skeleton />
-        </Typography>
-      ) : (
-        <>
-          <EntryFilePicker className={classes.flexNone} entryFile={entryFile} onEntryFileChange={setEntryFile} />
-          <ChunksPicker className={classes.flex1} entryFile={entryFile} />
-        </>
-      )}
+      <Box>
+        {loading ? (
+          <Typography component="div" variant="h4">
+            <Skeleton />
+          </Typography>
+        ) : (
+          <>
+            <EntryFilePicker className={classes.flexNone} entryFile={entryFile} onEntryFileChange={setEntryFile} />
+            <ChunksPicker className={classes.flex1} entryFile={entryFile} />
+          </>
+        )}
+      </Box>
     </Box>
   );
 }
