@@ -1,6 +1,6 @@
 import { useQuery as baseUseQuery } from "react-query";
 
-function queryFn(url, method, payload) {
+function queryFn({url, method, payload}: any) {
 	return fetch(url, {
 		method,
 		//@ts-ignore
@@ -16,11 +16,17 @@ const useQuery = ({
 	method,
 	payload,
 	config = EMPTY_OBJ,
+}: {
+	shouldFetch: boolean,
+	url: string,
+	method: string,
+	payload: any,
+	config: {}
 }) =>
-	baseUseQuery({
-		queryKey: shouldFetch && [url, method, payload],
+	baseUseQuery(
+		[url, method, payload],
 		queryFn,
 		config,
-	});
+	);
 
 export { useQuery };
