@@ -1,4 +1,4 @@
-const EMPTY = [];
-const useChildrenChunksQuery = (filepath) => ({ data: EMPTY });
+const EMPTY: Array<any> = [];
+const useChildrenChunksQuery = (filepath: string) => ({ data: EMPTY });
 
 export { useChildrenChunksQuery };
