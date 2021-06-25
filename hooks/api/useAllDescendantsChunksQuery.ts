@@ -1,9 +1,11 @@
 import { useCallback } from "react";
-import { queryCache } from "react-query";
+import { QueryClient } from "react-query";
+
+const queryClient = new QueryClient();
 
 const useAllDescendantChunksQuery = () => {
 	const loadAllDescendantChunks = useCallback((filepath) => {
-		const cached = queryCache.getQueryData([
+		const cached = queryClient.getQueryData([
 			`/api/all-descendant-chunks?fp=${filepath}`,
 			"GET",
 			null,
@@ -13,7 +15,7 @@ const useAllDescendantChunksQuery = () => {
 			: fetch(`/api/all-descendant-chunks?fp=${filepath}`)
 					.then((r) => r.json())
 					.then((res) => {
-						queryCache.setQueryData(
+						queryClient.setQueryData(
 							[`/api/all-descendant-chunks?fp=${filepath}`, "GET", null],
 							res
 						);

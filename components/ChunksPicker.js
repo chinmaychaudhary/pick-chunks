@@ -255,7 +255,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   }, [entryFile]);
 
   return (
-    (!!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size) && (
+    (!!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size) ? (
       <Box mt={2} className={className} display="flex" flexDirection="column">
         <Box display="flex" flex="1" minHeight={0} className={classes.rootContainer} disabled={processing}>
           <Box
@@ -377,7 +377,7 @@ const ChunksPicker = ({ entryFile, className }) => {
           message={`${selectedChunks.size} chunks copied`}
         />
       </Box>
-    )
+    ): (<></>)
   );
 };
 

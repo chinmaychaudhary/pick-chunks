@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
   shortcutCmd: {
     width: '100px',
     flex: '0 0 auto',
-    fontWeight: '700',
+    fontWeight: 700,
   },
 }));
 
@@ -75,7 +75,7 @@ function App() {
     filepath: '',
     name: '',
   });
-  const btnRef = useRef();
+  const btnRef = useRef(null);
   const [showPopover, setPopoverVisibility] = useState(false);
   const handleShortcutClick = useCallback(() => {
     setPopoverVisibility(true);
@@ -112,7 +112,7 @@ function App() {
         >
           <List component="nav" className={classes.popover} aria-label="shortcuts popover">
             {clickInfo.map(({ cmd, desc }, index) => (
-              <ListItem divider={index === clickInfo.length - 1}>
+              <ListItem key={cmd} divider={index === clickInfo.length - 1}>
                 <Box display="flex" alignItems="center" flex="1">
                   <ListItemText className={classes.shortcutCmd}>
                     <Typography color="secondary">
@@ -132,7 +132,7 @@ function App() {
               </ListItem>
             ))}
             {shortcutsInfo.map(({ cmd, desc }, index) => (
-              <ListItem>
+              <ListItem key={cmd}>
                 <Box display="flex" alignItems="center" flex="1">
                   <ListItemText className={classes.shortcutCmd}>
                     <Typography color="secondary">{cmd}</Typography>
