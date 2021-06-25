@@ -2,11 +2,14 @@
   "name": "pick-chunks",
   "version": "1.0.1",
   "private": true,
+  "bin": {
+    "pc": "index.js"
+  },
   "engines": {
     "node": ">=12.18.3"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "node index.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
