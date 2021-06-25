@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { resolve } from 'path';
 import { getAllFiles } from '@rishabh3112/pc';
 
 type Data = {
@@ -7,11 +6,10 @@ type Data = {
   pages: any;
 };
 
-// TODO: find a way to get commandline args into nextjs application
-const root = resolve(process.cwd(), './');
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   const query = req.query.q || '';
+  const root = await fetch('http://localhost:3000/args/root').then((res) => res.text());
   const files = await getAllFiles(root, query);
   const filesPerPage = 10;
   const pages: any = {};

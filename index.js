@@ -6,7 +6,7 @@ const { cyanBright, greenBright, bold, gray } = require('chalk');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({
-    dev: false,
+    dev,
 });
 const handle = app.getRequestHandler();
 
