@@ -1,7 +1,10 @@
 {
   "name": "pick-chunks",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "private": true,
+  "engines": {
+    "node": ">=12.18.3"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,14 +12,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@material-ui/core": "^4.11.4",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.58",
+    "framer-motion": "^4.1.17",
+    "fuzzy-search": "^3.2.1",
     "next": "11.0.1",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "react-use": "^17.2.4",
+    "react-window": "^1.8.6"
   },
   "devDependencies": {
     "@types/react": "17.0.11",
     "eslint": "7.29.0",
     "eslint-config-next": "11.0.1",
+    "prettier": "^2.3.1",
     "typescript": "4.3.4"
   }
 }
