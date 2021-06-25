@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAllFiles } from '@rishabh3112/pc';
+import { getAllFiles } from '../../utils/getAllFiles';
 
 type Data = {
   directory: string;
@@ -8,7 +8,7 @@ type Data = {
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const query = req.query.q || '';
+  const query: any = req.query.q || '';
   const root = await fetch('http://localhost:3000/args/root').then((res) => res.text());
   const files = await getAllFiles(root, query);
   const filesPerPage = 10;

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAllChunks, clearStore } from '@rishabh3112/pc';
+import { getAllChunks, clearStore } from '../../utils/getAllChunks';
 
 type Data = {
   directory: string;
@@ -9,7 +9,7 @@ type Data = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
     if (req.method === 'POST') {
         const body = req.body;
-        const tree = await getAllChunks(body.path).then((tree: object) => {
+        const tree = await getAllChunks(body.path).then((tree: Record<string, any>) => {
           clearStore();
           return tree;
         });
