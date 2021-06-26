@@ -37,6 +37,17 @@ const useStyles = makeStyles((theme) => ({
     flex: '0 0 auto',
     fontWeight: 700,
   },
+  header: {
+    display: 'flex',
+    flexDirection: 'row',
+    flex: '0 0 auto',
+    justifyContent: 'space-between',
+  },
+  mainContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+  },
 }));
 
 const clickInfo = [
@@ -85,91 +96,74 @@ function App() {
   }, []);
 
   return (
-    <Box padding={5} display="flex" flexDirection="column" height="0%">
-      <Box display="flex" flexDirection="row" p={1} m={1} bgcolor="background.paper">
-        <Box p={1} bgcolor="grey.300">
-          Item 1
-        </Box>
-        <Box p={1} bgcolor="grey.300">
-          Item 2
-        </Box>
-        <Box p={1} bgcolor="grey.300">
-          Item 3
-        </Box>
-      </Box>
-      <Box display="flex" flexDirection="row-reverse" p={1} m={1} bgcolor="background.paper">
-        <Box p={1} bgcolor="grey.300">
-          Item 1
-        </Box>
-        <Box p={1} bgcolor="grey.300">
-          Item 2
-        </Box>
-        <Box p={1} bgcolor="grey.300">
-          Item 3
-        </Box>
-      </Box>
-      <Box display="flex" flex="0 0 auto" justifyContent="space-between" alignItems="center" mb={4}>
-        <Box display="flex" flex="0 0 auto" alignItems="center">
+    <Box className={classes.mainContent} p={5}>
+      <Box className={classes.header} bgcolor="error.main" borderRadius={8}>
+        <Box display="flex" flexDirection="row" flex="0 0 auto" justifyContent="flex-start" alignItems="flex-start">
           <Logo className={classes.logo} />
           <Typography variant="h5" color="textPrimary">
             Pick Chunks
           </Typography>
         </Box>
-        <IconButton onClick={handleShortcutClick} ref={btnRef} aria-label="shortcuts" className={classes.shortcutIcon}>
-          <KeyboardOutlinedIcon fontSize="large" />
-        </IconButton>
-        <Popover
-          id="shortcuts"
-          open={showPopover}
-          anchorEl={btnRef.current}
-          onClose={hideShortcutPopover}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-        >
-          <List component="nav" className={classes.popover} aria-label="shortcuts popover">
-            {clickInfo.map(({ cmd, desc }, index) => (
-              <ListItem key={cmd} divider={index === clickInfo.length - 1}>
-                <Box display="flex" alignItems="center" flex="1">
-                  <ListItemText className={classes.shortcutCmd}>
-                    <Typography color="secondary">
-                      <Box component="span">{cmd}</Box>
-                    </Typography>
-                  </ListItemText>
-                  <ListItemText primary={desc} />
-                </Box>
-              </ListItem>
-            ))}
-            {shortcutsInfo.map(({ cmd, desc }, index) => (
-              <ListItem key={cmd}>
-                <Box display="flex" alignItems="center" flex="1">
-                  <ListItemText className={classes.shortcutCmd}>
-                    <Typography color="secondary">{cmd}</Typography>
-                  </ListItemText>
-                  <ListItemText primary={desc} />
-                </Box>
-              </ListItem>
-            ))}
-          </List>
-        </Popover>
+        <Box>
+          <IconButton
+            onClick={handleShortcutClick}
+            ref={btnRef}
+            aria-label="shortcuts"
+            className={classes.shortcutIcon}
+          >
+            <KeyboardOutlinedIcon fontSize="large" />
+          </IconButton>
+          <Popover
+            id="shortcuts"
+            open={showPopover}
+            anchorEl={btnRef.current}
+            onClose={hideShortcutPopover}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'center',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+          >
+            <List component="nav" className={classes.popover} aria-label="shortcuts popover">
+              {clickInfo.map(({ cmd, desc }, index) => (
+                <ListItem key={cmd} divider={index === clickInfo.length - 1}>
+                  <Box display="flex" alignItems="center" flex="1">
+                    <ListItemText className={classes.shortcutCmd}>
+                      <Typography color="secondary">
+                        <Box component="span">{cmd}</Box>
+                      </Typography>
+                    </ListItemText>
+                    <ListItemText primary={desc} />
+                  </Box>
+                </ListItem>
+              ))}
+              {shortcutsInfo.map(({ cmd, desc }, index) => (
+                <ListItem key={cmd}>
+                  <Box display="flex" alignItems="center" flex="1">
+                    <ListItemText className={classes.shortcutCmd}>
+                      <Typography color="secondary">{cmd}</Typography>
+                    </ListItemText>
+                    <ListItemText primary={desc} />
+                  </Box>
+                </ListItem>
+              ))}
+            </List>
+          </Popover>
+        </Box>
       </Box>
-      <Box>
-        {loading ? (
-          <Typography component="div" variant="h4">
-            <Skeleton />
-          </Typography>
-        ) : (
-          <>
-            <EntryFilePicker className={classes.flexNone} entryFile={entryFile} onEntryFileChange={setEntryFile} />
-            <ChunksPicker className={classes.flex1} entryFile={entryFile} />
-          </>
-        )}
-      </Box>
+      {loading ? (
+        <Typography component="div" variant="h4">
+          <Skeleton />
+        </Typography>
+      ) : (
+        <>
+          <EntryFilePicker className={classes.flexNone} entryFile={entryFile} onEntryFileChange={setEntryFile} />
+          <ChunksPicker className={classes.flex1} entryFile={entryFile} />
+        </>
+      )}
     </Box>
   );
 }
