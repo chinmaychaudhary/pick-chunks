@@ -82,10 +82,12 @@ const shortcutsInfo = [
 function App() {
   const classes = useStyles();
   const loading = true;
+  /* Fetched file name from localstorage, if not present sets to null*/
   const [entryFile, setEntryFile] = useLocalStorage('pick-entry', {
     filepath: '',
     name: '',
   });
+
   const btnRef = useRef(null);
   const [showPopover, setPopoverVisibility] = useState(false);
   const handleShortcutClick = useCallback(() => {
