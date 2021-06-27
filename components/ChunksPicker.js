@@ -62,6 +62,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   const classes = useStyles();
   // YET TO IMPLEMENT, used to find all the descendents of a chunk,
   // used in handleEntireSubGraphSelect
+  // Implementation from useAllDescendantsChunkQuery.tc can be used I think
   const loadAllDescendantChunks = useCallback(
     () =>
       new Promise((resolve, reject) => {
@@ -214,7 +215,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [shouldShowSnackbar, setSnackbarVisibility] = useState(false);
   const hideSnackbar = useCallback(() => setSnackbarVisibility(false), []);
   // used for the copy button and copies all the current content and shows snackbar
-  //What is NAVIGATOR.CLIPBOARD CODE ?
+  // writes copied content to Clipboard
   const handleCopy = useCallback(() => {
     //eslint-disable-next-line
     navigator.clipboard?.writeText([...selectedChunks].join()).then(() => setSnackbarVisibility(true));
@@ -273,6 +274,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [containerRef, { height, width }] = useMeasure();
   // useMeasure, returns the width of the container referenced with selectedContainerRef once its mounted
   const [selectedContainerRef, { width: selectionBoxWidth }] = useMeasure();
+  // Error here : react hooks has unnecessary dependencies
   const windowData = useMemo(() => ({}), [selectedChunks, processing, filteredChunks]);
 
   useEffect(() => {
