@@ -60,7 +60,8 @@ function SlideTransition(props) {
 
 const ChunksPicker = ({ entryFile, className }) => {
   const classes = useStyles();
-  // YET TO IMPLEMENT
+  // YET TO IMPLEMENT, used to find all the descendents of a chunk,
+  // used in handleEntireSubGraphSelect
   const loadAllDescendantChunks = useCallback(
     () =>
       new Promise((resolve, reject) => {
@@ -85,7 +86,7 @@ const ChunksPicker = ({ entryFile, className }) => {
 
   // used for disabling some activities if something is processing
   const [processing, setProcessing] = useState(false);
-  //DID NOT UNDERSTAND
+  // used for searching a chunk when chunk-name is searched from the textField
   const [keyword, setKeyword] = useState('');
   // Contains the set of all Currently selected Chunks in a Set
   const [selectedChunks, setSelectedChunks] = useState(new Set());
@@ -107,13 +108,17 @@ const ChunksPicker = ({ entryFile, className }) => {
   fcRef.current = filteredChunks;
   selectedChunksRef.current = selectedChunks;
   processingRef.current = processing;
-
+  // created a ref named: handleChunkEnterRef, and is used in list of chunks shown, so when we click on a particular
+  // chunk it adds this new chunk to crums using setCrumbs. eg [a/b] clicked on c -> [a/b/c]
   const handleChunkEnter = useCallback((e) => {
+    // e.currentTarget.dataset is used for list items
     const { filepath, chunkName } = e.currentTarget.dataset;
     setCrumbs((prevCrumbs) => prevCrumbs.concat({ filepath, chunkName }));
     setKeyword('');
   }, []);
 
+  // closest returns the closest ancestor of "provided selector string" of the chosen element
+  // this is passed to {onDelete on a Chip Component}
   const handleChunkDelete = useCallback((e) => {
     const chunkName = e.currentTarget.closest('[data-container="chunk"]').dataset.chunkName;
     setSelectedChunks((prevChunks) => {
@@ -122,12 +127,14 @@ const ChunksPicker = ({ entryFile, className }) => {
     });
   }, []);
 
+  // selects the current chunk and appends to the chunks, its used when user uses keyboard input {s}
   const handleSingleChunkSelect = useCallback((chunkName) => {
     setSelectedChunks((prev) => new Set([...prev, chunkName]));
   }, []);
-
+  // selects the subgraph , its used when user uses keyboard input {p}
   const handleEntireSubGraphSelect = useCallback(
     (chunkName, filepath) => {
+      //DID NOT UNDERSTAND HOW IS IT WORKING ? as it should load descendents but its taking all the current chunks
       const nextChunks = new Set([...selectedChunksRef.current]);
       setProcessing(true);
       loadAllDescendantChunks(filepath).then((descChunks) => {
@@ -140,7 +147,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     },
     [loadAllDescendantChunks]
   );
-
+  // as name says it removes the single chunk, its used when user uses keyboard input {x}
   const handleSingleChunkRemove = useCallback((chunkName) => {
     setSelectedChunks((prev) => {
       prev.delete(chunkName);
@@ -148,6 +155,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     });
   }, []);
 
+  // as name says removes all the child chunks and also undetstood this code
   const handleEntireSubGraphRemove = useCallback(
     (chunkName, filepath) => {
       const nextChunks = new Set([...selectedChunksRef.current]);
@@ -162,7 +170,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     },
     [loadAllDescendantChunks]
   );
-
+  // if item is chosen and also key is pressed,take action if required
   const handleItemKeyDown = useCallback(
     (e) => {
       const { filepath, chunkName, checked } = e.currentTarget.dataset;
@@ -183,9 +191,10 @@ const ChunksPicker = ({ entryFile, className }) => {
     },
     [handleSingleChunkSelect, handleSingleChunkRemove, handleEntireSubGraphSelect, handleEntireSubGraphRemove]
   );
-
+  // fired when the checkbox in Chunk-item from itemList is clicked
   const handleCheckboxToggle = useCallback(
     (e) => {
+      // WHY stopPropogation is used ??
       e.stopPropagation();
       const { filepath, chunkName, checked } = e.currentTarget.dataset;
       if (checked === '0') {
@@ -197,12 +206,15 @@ const ChunksPicker = ({ entryFile, className }) => {
     [handleSingleChunkSelect, handleEntireSubGraphSelect, handleSingleChunkRemove, handleEntireSubGraphRemove]
   );
 
+  // as name says removes all selected chunks, resets the chunk-Set
   const handleDeselectAll = useCallback(() => {
     setSelectedChunks(new Set());
   }, [setSelectedChunks]);
 
   const [shouldShowSnackbar, setSnackbarVisibility] = useState(false);
   const hideSnackbar = useCallback(() => setSnackbarVisibility(false), []);
+  // used for the copy button and copies all the current content and shows snackbar
+  //What is NAVIGATOR.CLIPBOARD CODE ?
   const handleCopy = useCallback(() => {
     //eslint-disable-next-line
     navigator.clipboard?.writeText([...selectedChunks].join()).then(() => setSnackbarVisibility(true));
@@ -304,7 +316,7 @@ const ChunksPicker = ({ entryFile, className }) => {
           </Breadcrumbs>
 
           <Box display="flex" alignItems="flex-end">
-            {/*The right side box to show contents */}
+            {/*input field for to search for a chunk*/}
             <TextField
               variant="outlined"
               flex="0 0 auto"
