@@ -10,7 +10,7 @@ export const clearStore = () => {
   store = {};
 };
 
-export const getAllChunks = (path: string) => {
+export const getAllChunks = (path: string): Record<string, any> => {
 
   if (store[path] === null) {
     return Promise.resolve({
