@@ -3,11 +3,10 @@ const next = require('next');
 const argParser = require('commander');
 const { resolve } = require('path');
 const { cyanBright, greenBright, bold, gray } = require('chalk');
+const open = require('open');
 
 const dev = process.env.NODE_ENV !== 'production';
-const app = next({
-    dev,
-});
+const app = next({ dev });
 const handle = app.getRequestHandler();
 
 const run = async () => {
@@ -47,6 +46,8 @@ const run = async () => {
         'Gives list of chunks and dependency tree for given file'
       )}\n`
     );
+
+    open(baseRoute);
   });
 };
 
