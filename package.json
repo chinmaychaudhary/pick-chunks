@@ -2,19 +2,25 @@
   "name": "pick-chunks",
   "version": "1.0.1",
   "private": true,
+  "bin": {
+    "pc": "index.js"
+  },
   "engines": {
     "node": ">=12.18.3"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "node index.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@babel/parser": "^7.14.7",
+    "@babel/traverse": "^7.14.7",
     "@material-ui/core": "^4.11.4",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.58",
+    "@types/babel__traverse": "^7.14.0",
     "commander": "^8.0.0",
     "express": "^4.17.1",
     "framer-motion": "^4.1.17",
