@@ -11,6 +11,13 @@ const handle = app.getRequestHandler();
 
 const run = async () => {
   argParser.option('-r, --root <root>', 'path to source directory of project', './');
+  argParser.option('-p, --port <port>', 'port to run interface on', (value, def) => {
+    const port = parseInt(value);
+    if (isNaN(port) || port < 1000) {
+      return def;
+    }
+    return port;
+  }, 3000);
   argParser.parse();
 
   const args = argParser.opts();
@@ -31,8 +38,8 @@ const run = async () => {
     return handle(req, res);
   });
 
-  server.listen(3000, () => {
-    const baseRoute = 'http://localhost:3000';
+  server.listen(args.port, () => {
+    const baseRoute = `http://localhost:${args.port}`;
     console.clear();
     console.log(`\n${bold('Pick Chunks')}\n`);
     console.log(`${greenBright('Root')} : ${resolvedRoot}`);
