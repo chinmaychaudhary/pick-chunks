@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import useLocalStorage from 'react-use/lib/useLocalStorage';
 
 import Popover from '@material-ui/core/Popover';
@@ -81,12 +81,34 @@ const shortcutsInfo = [
 
 function App() {
   const classes = useStyles();
-  const loading = true;
-  /* Fetched file name from localstorage, if not present sets to null*/
-  const [entryFile, setEntryFile] = useLocalStorage('pick-entry', {
-    filepath: '',
-    name: '',
-  });
+  function relativePath(path: string, directory: string | any[]) {
+    const rel = path.substring(directory.length);
+    return rel;
+  }
+  const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
+  const [allFiles, setAllFiles] = useState([] as any);
+  var loading = true;
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch('/api/files');
+      const data = await response.json();
+      var files: { filepath: any; name: string }[] = [];
+      data.files.forEach((item: any) => {
+        const relPath = relativePath(item, data.directory);
+        files.push({
+          filepath: item,
+          name: relPath,
+        });
+      });
+      setAllFiles(files);
+      setEntryFile(files[0]);
+    };
+    fetchData();
+  }, []);
+
+  if (entryFile.filepath !== '') {
+    loading = false;
+  }
 
   const btnRef = useRef(null);
   const [showPopover, setPopoverVisibility] = useState(false);
@@ -162,8 +184,13 @@ function App() {
         </Typography>
       ) : (
         <>
-          <EntryFilePicker className={classes.flexNone} entryFile={entryFile} onEntryFileChange={setEntryFile} />
-          <ChunksPicker className={classes.flex1} entryFile={entryFile} />
+          <EntryFilePicker
+            className={classes.flexNone}
+            entryFile={entryFile}
+            onEntryFileChange={setEntryFile}
+            allFiles={allFiles}
+          />
+          {/* <ChunksPicker className={classes.flex1} entryFile={entryFile} /> */}
         </>
       )}
     </Box>
