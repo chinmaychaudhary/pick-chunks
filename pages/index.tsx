@@ -190,7 +190,7 @@ function App() {
             onEntryFileChange={setEntryFile}
             allFiles={allFiles}
           />
-          {/* <ChunksPicker className={classes.flex1} entryFile={entryFile} /> */}
+          <ChunksPicker className={classes.flex1} entryFile={entryFile} />
         </>
       )}
     </Box>
