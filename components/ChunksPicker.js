@@ -67,9 +67,9 @@ const ChunksPicker = ({ entryFile, className }) => {
     []
   );
 
-  const [crumbs, setCrumbs] = useState([{ filepath: entryFile.filepath, chunkName: 'entry' }]);
+  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.filepath, chunkName: 'entry' }]);
   useEffect(() => {
-    setCrumbs([{ filepath: entryFile.filepath }]);
+    setCrumbs([{ filepath: entryFile?.filepath }]);
     setKeyword('');
   }, [entryFile]);
   const handleCrumbClick = useCallback((e) => {
@@ -81,6 +81,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [childrenChunks, setChildrenChunks] = useState(null);
   useEffect(() => {
     const path = crumbs[crumbs.length - 1].filepath;
+    if (!path) return;
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

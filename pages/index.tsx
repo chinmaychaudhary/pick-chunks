@@ -87,7 +87,7 @@ function App() {
   }
   const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
   const [allFiles, setAllFiles] = useState([] as any);
-  var loading = true;
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch('/api/files');
@@ -106,9 +106,11 @@ function App() {
     fetchData();
   }, []);
 
-  if (entryFile.filepath !== '') {
-    loading = false;
-  }
+  useEffect(() => {
+    if (allFiles.length > 0) {
+      setLoading(false);
+    }
+  }, [allFiles])
 
   const btnRef = useRef(null);
   const [showPopover, setPopoverVisibility] = useState(false);
@@ -121,7 +123,7 @@ function App() {
 
   return (
     <Box className={classes.mainContent} p={5}>
-      <Box className={classes.header} bgcolor="error.main" borderRadius={8}>
+      <Box className={classes.header} borderRadius={8}>
         <Box display="flex" flexDirection="row" flex="0 0 auto" justifyContent="flex-start" alignItems="flex-start">
           <Logo className={classes.logo} />
           <Typography variant="h5" color="textPrimary">
