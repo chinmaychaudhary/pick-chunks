@@ -26,20 +26,22 @@ const run = async () => {
   }
 
   const resolvedRoot = resolve(process.cwd(), args.root);
+  const baseRoute = `http://localhost:${args.port}`;
 
   await app.prepare();
 
   const server = express();
 
+  server.use('*', (req, _, next) => {
+    req.srcDir = resolvedRoot;
+    next();
+  });
+
   server.all('*', (req, res) => {
-    if (req.path === "/args/root") {
-        return res.send(resolvedRoot);
-    }
     return handle(req, res);
   });
 
   server.listen(args.port, () => {
-    const baseRoute = `http://localhost:${args.port}`;
     console.clear();
     console.log(`\n${bold('Pick Chunks')}\n`);
     console.log(`${greenBright('Root')} : ${resolvedRoot}`);
