@@ -42,7 +42,10 @@ const addCollection = (configPath: string, collection: { name: string; descripti
         return property.key.name === 'collections';
       });
 
-      if (collectionProperty.length === 1 && t.isArrayExpression(collectionProperty[0].value)) {
+      if (collectionProperty.length === 1) {
+        if (!t.isArrayExpression(collectionProperty[0].value)) {
+          throw Error('Collections value should be array');
+        }
         collectionProperty[0].value.elements.push(collectionNode);
       } else {
         (node.right as t.ObjectExpression).properties.push(
