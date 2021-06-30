@@ -44,9 +44,12 @@ const addCollection = (configPath: string, collection: { name: string; descripti
       });
 
       if (collectionProperty.length === 1) {
-        collectionProperty.value.elements.append(collectionNode);
+        collectionProperty.value.elements.push(collectionNode);
       } else {
-        // TODO: create collection property and append collection
+        (node.right as t.ObjectExpression).properties.push(
+            t.objectProperty(t.identifier("collections"), t.arrayExpression([
+                collectionNode
+            ])));
       }
     },
   });
