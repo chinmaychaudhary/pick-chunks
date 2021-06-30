@@ -12,20 +12,24 @@ const DEFAULT_CONFIG_PATH = 'pick-chunks.config.js';
 
 const importConfig = (configPath) => {
   try {
-    const resolvedPath = resolve(process.cwd(), configPath || DEFAULT_CONFIG_PATH);
+    const resolvedPath = resolve(process.cwd(), configPath);
     return require(resolvedPath);
   } catch (err) {
+    if (configPath !== DEFAULT_CONFIG_PATH) {
+      console.warn(`⚠️ Configuration "${configPath}" not found`)
+    }
     return {};
   }
 };
 
 const run = async () => {
   argParser.option('-r, --root <root>', 'path to source directory of project', './');
+  argParser.option('-c, --config <config>', 'path to configuration', DEFAULT_CONFIG_PATH);
   argParser.parse();
 
   const args = argParser.opts();
   const options = {
-    ...importConfig(),
+    ...importConfig(args.config),
     args
   };
 
