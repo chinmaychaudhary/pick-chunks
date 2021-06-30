@@ -18,6 +18,35 @@ const createCollection = (name: string, description: string, chunks: string[]) =
   return t.objectExpression([nameProperty, descriptionProperty, chunksProperty]);
 };
 
+const addCollection = (configPath: string, collection: { name: string; description: string; chunks: string[] }) => {
+    const sourceCode = readFileSync(configPath).toString();
+    const ast = parser.parse(sourceCode, {
+        sourceType: "module",
+    });
+
+    const isCollectionAdded: boolean = false;
+    traverse(ast, {
+        AssignmentExpression(path) {
+            const node = path.node;
+            const isLeftModuleExports: boolean = t.isMemberExpression(node.left) && (node.left as any)?.object?.name === "module" && (node.left as any)?.property?.name === "exports";
+            const isRightObjectExpression: boolean = t.isObjectExpression(node.right);
+
+            if (!(isLeftModuleExports && isRightObjectExpression)) {
+                return;
+            }
+
+            const collectionProperty: any = (node.right as t.ObjectExpression).properties.filter((property: any) => {
+                return property.name === "collections";
+            });
+
+            if (collectionProperty.length === 1) {
+                // TODO: append new collection
+            } else {
+                // TODO: create collection property and append collection
+            }
+        }
+    });
+};
 
 export {
     createCollection
