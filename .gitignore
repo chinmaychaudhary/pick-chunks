@@ -33,3 +33,6 @@ yarn-error.log*
 # vercel
 .vercel
 .idea
+
+# pick-chunks
+pick-chunks.config.js

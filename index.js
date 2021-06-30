@@ -8,17 +8,32 @@ const open = require('open');
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
+const DEFAULT_CONFIG_PATH = 'pick-chunks.config.js';
+
+const importConfig = (configPath) => {
+  try {
+    const resolvedPath = resolve(process.cwd(), configPath || DEFAULT_CONFIG_PATH);
+    return require(resolvedPath);
+  } catch (err) {
+    return {};
+  }
+};
 
 const run = async () => {
   argParser.option('-r, --root <root>', 'path to source directory of project', './');
   argParser.parse();
 
   const args = argParser.opts();
-  if (args.root === undefined) {
-    args.root = './';
+  const options = {
+    ...importConfig(),
+    args
+  };
+
+  if (options.root === undefined) {
+    options.root = './';
   }
 
-  const resolvedRoot = resolve(process.cwd(), args.root);
+  const resolvedRoot = resolve(process.cwd(), options.root);
 
   await app.prepare();
 
