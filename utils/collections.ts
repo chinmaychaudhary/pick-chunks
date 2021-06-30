@@ -25,7 +25,6 @@ const addCollection = (configPath: string, collection: { name: string; descripti
   });
   const collectionNode = createCollection(collection);
 
-  const isCollectionAdded: boolean = false;
   traverse(ast, {
     AssignmentExpression(path) {
       const node = path.node;
@@ -39,20 +38,19 @@ const addCollection = (configPath: string, collection: { name: string; descripti
         return;
       }
 
-      const collectionProperty: any = (node.right as t.ObjectExpression).properties.filter((property: any) => {
+      const collectionProperty: any[] = (node.right as t.ObjectExpression).properties.filter((property: any) => {
         return property.key.name === 'collections';
       });
 
-      if (collectionProperty.length === 1) {
-        collectionProperty.value.elements.push(collectionNode);
+      if (collectionProperty.length === 1 && t.isArrayExpression(collectionProperty[0].value)) {
+        collectionProperty[0].value.elements.push(collectionNode);
       } else {
         (node.right as t.ObjectExpression).properties.push(
-            t.objectProperty(t.identifier("collections"), t.arrayExpression([
-                collectionNode
-            ])));
+          t.objectProperty(t.identifier('collections'), t.arrayExpression([collectionNode]))
+        );
       }
     },
   });
 };
 
-export { createCollection };
+export { addCollection };
