@@ -1,7 +1,8 @@
 import * as parser from '@babel/parser';
 import traverse from '@babel/traverse';
+import generate from "@babel/generator";
 import * as t from '@babel/types';
-import { existsSync, readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 
 const createCollection = (collection: { name: string; description: string; chunks: string[] }) => {
   const { name, description, chunks } = collection;
@@ -54,6 +55,9 @@ const addCollection = (configPath: string, collection: { name: string; descripti
       }
     },
   });
+
+  const transformedCode = generate(ast, {}, sourceCode).code;
+  writeFileSync(configPath, transformedCode);
 };
 
 export { addCollection };

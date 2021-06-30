@@ -39,7 +39,7 @@ const run = async () => {
   const args = argParser.opts();
   const options = {
     ...importConfig(args.config),
-    args
+    ...args
   };
 
   if (options.root === undefined) {
