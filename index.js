@@ -4,6 +4,7 @@ const argParser = require('commander');
 const { resolve } = require('path');
 const { cyanBright, greenBright, bold, gray } = require('chalk');
 const open = require('open');
+const { existsSync } = require('fs');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -46,6 +47,11 @@ const run = async () => {
   server.all('*', (req, res) => {
     if (req.path === "/args/root") {
         return res.send(resolvedRoot);
+    }
+
+    const resolvedConfigPath = resolve(process.cwd(), options.config);
+    if (existsSync(resolvedConfigPath)) {
+      req.configPath = resolvedConfigPath;
     }
     return handle(req, res);
   });
