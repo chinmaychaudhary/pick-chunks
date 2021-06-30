@@ -60,4 +60,54 @@ const addCollection = (configPath: string, collection: { name: string; descripti
   writeFileSync(configPath, transformedCode);
 };
 
-export { addCollection };
+const getCollections = (configPath: string) => {
+  const sourceCode = readFileSync(configPath).toString();
+  const ast = parser.parse(sourceCode, {
+    sourceType: 'module',
+  });
+  let collections: any[] = [];
+
+  traverse(ast, {
+    AssignmentExpression(path) {
+      const node = path.node;
+      const isLeftModuleExports: boolean =
+        t.isMemberExpression(node.left) &&
+        (node.left as any)?.object?.name === 'module' &&
+        (node.left as any)?.property?.name === 'exports';
+      const isRightObjectExpression: boolean = t.isObjectExpression(node.right);
+
+      if (!(isLeftModuleExports && isRightObjectExpression)) {
+        return;
+      }
+
+      const collectionProperty: any[] = (node.right as t.ObjectExpression).properties.filter((property: any) => {
+        return property.key.name === 'collections';
+      });
+
+      if (collectionProperty.length === 1) {
+        if (!t.isArrayExpression(collectionProperty[0].value)) {
+          throw Error('Collections value should be array');
+        }
+        collections = collectionProperty[0].value.elements.map((collectionNode: any) => {
+           const collection: any = {};
+           collectionNode.properties.forEach((collectionProperty: any) => {
+             if (t.isStringLiteral(collectionProperty.value)) {
+              collection[collectionProperty.key.name] = collectionProperty.value.value;
+             } else if (t.isArrayExpression(collectionProperty.value)) {
+              collection[collectionProperty.key.name] = collectionProperty.value.elements.map((element: any) => {
+                return element.value;
+              });
+             }
+           });
+           return collection;
+        });
+      } else {
+        collections = [];
+      }
+    },
+  });
+
+  return collections;
+};
+
+export { addCollection, getCollections };
