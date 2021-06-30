@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiResponse } from 'next';
 import { getAllFiles } from '../../utils/getAllFiles';
 
 type Data = {
@@ -6,9 +6,9 @@ type Data = {
   files: string[];
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+export default async function handler(req: any, res: NextApiResponse<Data>) {
   const query: any = req.query.q || '';
-  const root = await fetch('http://localhost:3000/args/root').then((res) => res.text());
+  const root = req.srcDir;
   const files = await getAllFiles(root, query);
 
   res.status(200).json({
