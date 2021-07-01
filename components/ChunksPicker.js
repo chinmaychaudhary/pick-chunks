@@ -26,6 +26,7 @@ import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 
 import Chip from '@material-ui/core/Chip';
+import SaveIcon from '@material-ui/icons/Save';
 
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
@@ -290,6 +291,10 @@ const ChunksPicker = ({ entryFile, className }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const windowData = useMemo(() => ({}), [selectedChunks, processing, filteredChunks]);
 
+  // HANDLE SAVE COLLECTION STARTS FROM HERE
+  const handleSaveCollection = () => {
+    console.log('Save Button Clicked');
+  };
   return !!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size ? (
     <Box mt={2} className={className} display="flex" flexDirection="column">
       <Box display="flex" flex="1" minHeight={0} className={classes.rootContainer} disabled={processing}>
@@ -345,6 +350,9 @@ const ChunksPicker = ({ entryFile, className }) => {
               {/*Delete Button*/}
               <IconButton disabled={!selectedChunks.size} onClick={handleDeselectAll} aria-label="deselect all">
                 <DeleteOutlineIcon />
+              </IconButton>
+              <IconButton disabled={!selectedChunks.size} onClick={handleSaveCollection} aria-label="save collection">
+                <SaveIcon />
               </IconButton>
             </Box>
           </Box>
