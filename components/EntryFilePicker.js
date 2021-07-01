@@ -59,7 +59,7 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFi
       </Typography>
       <Autocomplete
         id="asynchronous-demo"
-        style={{ width: "100%" }}
+        style={{ width: '100%' }}
         // review the below ones
         value={entryFile}
         options={data || EMPTY_ARRAY}

@@ -4,35 +4,74 @@ const argParser = require('commander');
 const { resolve } = require('path');
 const { cyanBright, greenBright, bold, gray } = require('chalk');
 const open = require('open');
+const { existsSync } = require('fs');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
+const DEFAULT_CONFIG_PATH = 'pick-chunks.config.js';
+
+const importConfig = (configPath) => {
+  try {
+    const resolvedPath = resolve(process.cwd(), configPath);
+    return require(resolvedPath);
+  } catch (err) {
+    if (configPath !== DEFAULT_CONFIG_PATH) {
+      console.warn(`⚠️ Configuration "${configPath}" not found`);
+    }
+    return {};
+  }
+};
 
 const run = async () => {
   argParser.option('-r, --root <root>', 'path to source directory of project', './');
+  argParser.option('-c, --config <config>', 'path to configuration', DEFAULT_CONFIG_PATH);
+  argParser.option(
+    '-p, --port <port>',
+    'port to run interface on',
+    (value, def) => {
+      const port = parseInt(value);
+      if (isNaN(port) || port < 1000) {
+        return def;
+      }
+      return port;
+    },
+    3000
+  );
+
   argParser.parse();
 
   const args = argParser.opts();
-  if (args.root === undefined) {
-    args.root = './';
+  const options = {
+    ...importConfig(args.config),
+    ...args,
+  };
+
+  if (options.root === undefined) {
+    options.root = './';
   }
 
-  const resolvedRoot = resolve(process.cwd(), args.root);
+  const resolvedRoot = resolve(process.cwd(), options.root);
+  const resolvedConfigPath = resolve(process.cwd(), options.config);
+  const baseRoute = `http://localhost:${options.port}`;
 
   await app.prepare();
 
   const server = express();
 
-  server.all('*', (req, res) => {
-    if (req.path === "/args/root") {
-        return res.send(resolvedRoot);
+  server.use('*', (req, _, next) => {
+    req.srcDir = resolvedRoot;
+    if (existsSync(resolvedConfigPath)) {
+      req.configPath = resolvedConfigPath;
     }
+    next();
+  });
+
+  server.all('*', (req, res) => {
     return handle(req, res);
   });
 
-  server.listen(3000, () => {
-    const baseRoute = 'http://localhost:3000';
+  server.listen(options.port, () => {
     console.clear();
     console.log(`\n${bold('Pick Chunks')}\n`);
     console.log(`${greenBright('Root')} : ${resolvedRoot}`);
