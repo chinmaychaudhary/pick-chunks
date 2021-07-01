@@ -82,7 +82,7 @@ const shortcutsInfo = [
 function App() {
   const classes = useStyles();
   function relativePath(path: string, directory: string | any[]) {
-    const rel = path.substring(directory.length);
+    const rel = path.substring(directory.length + 1);
     return rel;
   }
   const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
@@ -110,7 +110,7 @@ function App() {
     if (allFiles.length > 0) {
       setLoading(false);
     }
-  }, [allFiles])
+  }, [allFiles]);
 
   const btnRef = useRef(null);
   const [showPopover, setPopoverVisibility] = useState(false);

@@ -67,9 +67,9 @@ const ChunksPicker = ({ entryFile, className }) => {
     []
   );
 
-  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.filepath, chunkName: 'entry' }]);
+  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.name }]);
   useEffect(() => {
-    setCrumbs([{ filepath: entryFile?.filepath }]);
+    setCrumbs([{ filepath: entryFile?.name }]);
     setKeyword('');
   }, [entryFile]);
   const handleCrumbClick = useCallback((e) => {
