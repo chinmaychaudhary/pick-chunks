@@ -6,10 +6,10 @@ type Data = {
   pages: any;
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+export default async function handler(req: any, res: NextApiResponse<Data>) {
   if (req.method === 'POST') {
     const body = req.body;
-    const tree = await getAllChunks(body.path).then((tree: Record<string, any>) => {
+    const tree = await getAllChunks(body.path, req.srcDir).then((tree: Record<string, any>) => {
       clearStore();
       return tree;
     });
