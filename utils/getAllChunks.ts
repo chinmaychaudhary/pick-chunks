@@ -1,7 +1,7 @@
 import * as parser from '@babel/parser';
 import traverse from '@babel/traverse';
 import { existsSync, readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { resolve, dirname, relative } from 'path';
 
 let store: Record<string, any> = {};
 const extensions = ['.js', '.ts', '.tsx'];
@@ -71,7 +71,8 @@ export const getAllChunks = (path: string): Record<string, any> => {
         continue;
       }
 
-      chunks.add(pathToChunk);
+      const relativePath = relative(cwd, pathToChunk);
+      chunks.add(relativePath);
     }
   });
   dynamicImports.clear();
