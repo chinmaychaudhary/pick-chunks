@@ -254,130 +254,130 @@ const ChunksPicker = ({ entryFile, className }) => {
     setKeyword('');
   }, [entryFile]);
 
-  return (
-    (!!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size) ? (
-      <Box mt={2} className={className} display="flex" flexDirection="column">
-        <Box display="flex" flex="1" minHeight={0} className={classes.rootContainer} disabled={processing}>
+  return !!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size ? (
+    <Box mt={2} className={className} display="flex" flexDirection="column">
+      <Box display="flex" flex="1" minHeight={0} className={classes.rootContainer} disabled={processing}>
+        <Box
+          flex="1"
+          minHeight={0}
+          display="flex"
+          flexDirection="column"
+          className={classes.container}
+          disabled={processing}
+        >
+          <Breadcrumbs aria-label="breadcrumb" flex="0 0 auto" style={{ marginBottom: '8px' }}>
+            {crumbs.slice(0, crumbs.length - 1).map(({ filepath, chunkName }, index) => (
+              <Link
+                key={filepath}
+                color="secondary"
+                href=""
+                data-filepath={filepath}
+                data-chunk-name={chunkName}
+                onClick={handleCrumbClick}
+                data-index={index}
+              >
+                <Typography variant="h6" color="secondary">
+                  {chunkName}
+                </Typography>
+              </Link>
+            ))}
+            <Typography variant="h6" color="textPrimary">
+              {crumbs[crumbs.length - 1].chunkName}
+            </Typography>
+          </Breadcrumbs>
+          <Box display="flex" alignItems="flex-end">
+            <TextField
+              variant="outlined"
+              flex="0 0 auto"
+              style={{ marginBottom: '20px', width: '35%' }}
+              label="Search Chunks"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+            <Box ml="auto">
+              <IconButton disabled={!selectedChunks.size} onClick={handleCopy} aria-label="copy">
+                <FileCopyOutlinedIcon />
+              </IconButton>
+              <IconButton disabled={!selectedChunks.size} onClick={handleDeselectAll} aria-label="deselect all">
+                <DeleteOutlineIcon />
+              </IconButton>
+            </Box>
+          </Box>
           <Box
+            mt={1}
+            ref={containerRef}
+            display="flex"
             flex="1"
             minHeight={0}
-            display="flex"
-            flexDirection="column"
-            className={classes.container}
-            disabled={processing}
+            data-boo="1"
+            width="100%"
+            maxWidth="100%"
           >
-            <Breadcrumbs aria-label="breadcrumb" flex="0 0 auto" style={{ marginBottom: '8px' }}>
-              {crumbs.slice(0, crumbs.length - 1).map(({ filepath, chunkName }, index) => (
-                <Link
-                  key={filepath}
-                  color="secondary"
-                  href=""
-                  data-filepath={filepath}
-                  data-chunk-name={chunkName}
-                  onClick={handleCrumbClick}
-                  data-index={index}
-                >
-                  <Typography variant="h6" color="secondary">
-                    {chunkName}
-                  </Typography>
-                </Link>
-              ))}
-              <Typography variant="h6" color="textPrimary">
-                {crumbs[crumbs.length - 1].chunkName}
-              </Typography>
-            </Breadcrumbs>
-            <Box display="flex" alignItems="flex-end">
-              <TextField
-                variant="outlined"
-                flex="0 0 auto"
-                style={{ marginBottom: '20px', width: '35%' }}
-                label="Search Chunks"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-              />
-              <Box ml="auto">
-                <IconButton disabled={!selectedChunks.size} onClick={handleCopy} aria-label="copy">
-                  <FileCopyOutlinedIcon />
-                </IconButton>
-                <IconButton disabled={!selectedChunks.size} onClick={handleDeselectAll} aria-label="deselect all">
-                  <DeleteOutlineIcon />
-                </IconButton>
-              </Box>
-            </Box>
-            <Box
-              mt={1}
-              ref={containerRef}
-              display="flex"
-              flex="1"
-              minHeight={0}
-              data-boo="1"
-              width="100%"
-              maxWidth="100%"
-            >
-              <div className={classes.listRoot} style={{ height, width: width - selectionBoxWidth }}>
-                <FixedSizeList
-                  height={height}
-                  width={width - selectionBoxWidth}
-                  itemSize={58}
-                  itemCount={filteredChunks?.length || 0}
-                  data={windowData}
-                >
-                  {ListItemContainer}
-                </FixedSizeList>
-              </div>
-              <Box ref={selectedContainerRef} flex="1">
-                <Box
-                  ref={selectedContainerRef}
-                  className={classes.selectedChunks}
-                  justifyContent="center"
-                  flexWrap="wrap"
-                  borderRadius="borderRadius"
-                  // bgcolor="background.paper"
-                  borderColor="text.primary"
-                  border={1}
-                  mx={2}
-                  p={4}
-                  height="100%"
-                  position="sticky"
-                  top="0"
-                  overflow="auto"
-                >
-                  {[...selectedChunks].map((chunk) => (
-                    <motion.div
-                      key={chunk}
-                      style={{ display: 'inline-block' }}
-                      animate={{ scale: 1 }}
-                      initial={{ scale: 0.5 }}
-                    >
-                      <Chip
-                        label={chunk}
-                        classes={{ root: classes.chipRoot }}
-                        onDelete={handleChunkDelete}
-                        variant="outlined"
-                        data-chunk-name={chunk}
-                        data-chip="1"
-                        data-container="chunk"
-                      />
-                    </motion.div>
-                  ))}
-                </Box>
+            <div className={classes.listRoot} style={{ height, width: width - selectionBoxWidth }}>
+              <FixedSizeList
+                height={height}
+                width={width - selectionBoxWidth}
+                itemSize={58}
+                itemCount={filteredChunks?.length || 0}
+                data={windowData}
+              >
+                {ListItemContainer}
+              </FixedSizeList>
+            </div>
+            <Box ref={selectedContainerRef} flex="1">
+              <Box
+                ref={selectedContainerRef}
+                className={classes.selectedChunks}
+                justifyContent="center"
+                flexWrap="wrap"
+                borderRadius="borderRadius"
+                // bgcolor="background.paper"
+                borderColor="text.primary"
+                border={1}
+                mx={2}
+                p={4}
+                height="100%"
+                position="sticky"
+                top="0"
+                overflow="auto"
+              >
+                {[...selectedChunks].map((chunk) => (
+                  <motion.div
+                    key={chunk}
+                    style={{ display: 'inline-block' }}
+                    animate={{ scale: 1 }}
+                    initial={{ scale: 0.5 }}
+                  >
+                    <Chip
+                      label={chunk}
+                      classes={{ root: classes.chipRoot }}
+                      onDelete={handleChunkDelete}
+                      variant="outlined"
+                      data-chunk-name={chunk}
+                      data-chip="1"
+                      data-container="chunk"
+                    />
+                  </motion.div>
+                ))}
               </Box>
             </Box>
           </Box>
         </Box>
-        <Snackbar
-          open={shouldShowSnackbar}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          autoHideDuration={2000}
-          onClose={hideSnackbar}
-          TransitionComponent={SlideTransition}
-          message={`${selectedChunks.size} chunks copied`}
-        />
       </Box>
-    ): (<></>)
+      <Snackbar
+        open={shouldShowSnackbar}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        autoHideDuration={2000}
+        onClose={hideSnackbar}
+        TransitionComponent={SlideTransition}
+        message={`${selectedChunks.size} chunks copied`}
+      />
+    </Box>
+  ) : (
+    <></>
   );
 };
 

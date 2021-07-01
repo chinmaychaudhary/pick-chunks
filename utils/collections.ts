@@ -1,6 +1,6 @@
 import * as parser from '@babel/parser';
 import traverse from '@babel/traverse';
-import generate from "@babel/generator";
+import generate from '@babel/generator';
 import * as t from '@babel/types';
 import { readFileSync, writeFileSync } from 'fs';
 
@@ -89,17 +89,17 @@ const getCollections = (configPath: string) => {
           throw Error('Collections value should be array');
         }
         collections = collectionProperty[0].value.elements.map((collectionNode: any) => {
-           const collection: any = {};
-           collectionNode.properties.forEach((collectionProperty: any) => {
-             if (t.isStringLiteral(collectionProperty.value)) {
+          const collection: any = {};
+          collectionNode.properties.forEach((collectionProperty: any) => {
+            if (t.isStringLiteral(collectionProperty.value)) {
               collection[collectionProperty.key.name] = collectionProperty.value.value;
-             } else if (t.isArrayExpression(collectionProperty.value)) {
+            } else if (t.isArrayExpression(collectionProperty.value)) {
               collection[collectionProperty.key.name] = collectionProperty.value.elements.map((element: any) => {
                 return element.value;
               });
-             }
-           });
-           return collection;
+            }
+          });
+          return collection;
         });
       } else {
         collections = [];

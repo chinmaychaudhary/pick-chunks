@@ -6,17 +6,17 @@ type Data = {
 };
 
 export default async function handler(req: any, res: NextApiResponse<Data>) {
-    if (req.method === 'POST') {
-        const collection = req.body;
-        try {
-            addCollection(req.configPath, collection);
-            res.json({
-                status: "success"
-            });    
-        } catch (err) {
-            res.status(500).json({
-                status: err
-            })
-        }
+  if (req.method === 'POST') {
+    const collection = req.body;
+    try {
+      addCollection(req.configPath, collection);
+      res.json({
+        status: 'success',
+      });
+    } catch (err) {
+      res.status(500).json({
+        status: err,
+      });
     }
+  }
 }

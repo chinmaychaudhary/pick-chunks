@@ -17,7 +17,7 @@ const importConfig = (configPath) => {
     return require(resolvedPath);
   } catch (err) {
     if (configPath !== DEFAULT_CONFIG_PATH) {
-      console.warn(`⚠️ Configuration "${configPath}" not found`)
+      console.warn(`⚠️ Configuration "${configPath}" not found`);
     }
     return {};
   }
@@ -26,26 +26,30 @@ const importConfig = (configPath) => {
 const run = async () => {
   argParser.option('-r, --root <root>', 'path to source directory of project', './');
   argParser.option('-c, --config <config>', 'path to configuration', DEFAULT_CONFIG_PATH);
-  argParser.option('-p, --port <port>', 'port to run interface on', (value, def) => {
-    const port = parseInt(value);
-    if (isNaN(port) || port < 1000) {
-      return def;
-    }
-    return port;
-  }, 3000);
+  argParser.option(
+    '-p, --port <port>',
+    'port to run interface on',
+    (value, def) => {
+      const port = parseInt(value);
+      if (isNaN(port) || port < 1000) {
+        return def;
+      }
+      return port;
+    },
+    3000
+  );
 
   argParser.parse();
 
   const args = argParser.opts();
   const options = {
     ...importConfig(args.config),
-    ...args
+    ...args,
   };
 
   if (options.root === undefined) {
     options.root = './';
   }
-
 
   const resolvedRoot = resolve(process.cwd(), options.root);
   const resolvedConfigPath = resolve(process.cwd(), options.config);
