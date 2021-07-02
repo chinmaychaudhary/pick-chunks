@@ -16,7 +16,8 @@ import { EntryFilePicker } from '../components/EntryFilePicker';
 import { ChunksPicker } from '../components/ChunksPicker';
 
 import { Logo } from '../components/icons/Logo';
-
+import Navbar from '../components/Navbar';
+import { useFetch } from '../components/customHooks/useFetch';
 const useStyles = makeStyles((theme) => ({
   flexNone: { flex: '0 0 auto' },
   flex1: { flex: '1', minHeight: '0' },
@@ -87,14 +88,14 @@ function App() {
   }
   const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
   const [allFiles, setAllFiles] = useState([] as any);
-  const [loading, setLoading] = useState(true);
+  //const [loading, setLoading] = useState(true);
+  const { data: dataRecieved, loading: dataLoading } = useFetch('/api/files');
+
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch('/api/files');
-      const data = await response.json();
+    if (dataRecieved) {
       var files: { filepath: any; name: string }[] = [];
-      data.files.forEach((item: any) => {
-        const relPath = relativePath(item, data.directory);
+      dataRecieved.files.forEach((item: any) => {
+        const relPath = relativePath(item, dataRecieved.directory);
         files.push({
           filepath: item,
           name: relPath,
@@ -102,15 +103,42 @@ function App() {
       });
       setAllFiles(files);
       setEntryFile(files[0]);
-    };
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (allFiles.length > 0) {
-      setLoading(false);
+      // setLoading(false);
     }
-  }, [allFiles]);
+  }, [dataRecieved]);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const response = await fetch('/api/files');
+  //     const data = await response.json();
+  //     var files: { filepath: any; name: string }[] = [];
+  //     data.files.forEach((item: any) => {
+  //       const relPath = relativePath(item, data.directory);
+  //       files.push({
+  //         filepath: item,
+  //         name: relPath,
+  //       });
+  //     });
+  //     setAllFiles(files);
+  //     setEntryFile(files[0]);
+  //   };
+
+  //   if (isCurrent.current) {
+  //     fetchData();
+  //   }
+  //   return () => {
+  //     isCurrent.current = false;
+  //   };
+  // }, []);
+
+  // useEffect(() => {
+  //   if (allFiles.length > 0) {
+  //     setLoading(false);
+  //   }
+  //   return () => {
+  //     isCurrent.current = false;
+  //   };
+  // }, [allFiles]);
 
   const btnRef = useRef(null);
   const [showPopover, setPopoverVisibility] = useState(false);
@@ -123,6 +151,7 @@ function App() {
 
   return (
     <Box className={classes.mainContent} p={5}>
+      <Navbar />
       <Box className={classes.header} borderRadius={8}>
         <Box display="flex" flexDirection="row" flex="0 0 auto" justifyContent="flex-start" alignItems="flex-start">
           <Logo className={classes.logo} />
@@ -180,7 +209,7 @@ function App() {
           </Popover>
         </Box>
       </Box>
-      {loading ? (
+      {dataLoading ? (
         <Typography component="div" variant="h4">
           <Skeleton />
         </Typography>

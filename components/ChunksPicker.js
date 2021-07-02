@@ -27,6 +27,7 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
+import { Button } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
@@ -292,9 +293,29 @@ const ChunksPicker = ({ entryFile, className }) => {
   const windowData = useMemo(() => ({}), [selectedChunks, processing, filteredChunks]);
 
   // HANDLE SAVE COLLECTION STARTS FROM HERE
-  const handleSaveCollection = () => {
+  const handleSaveCollection = (e) => {
+    e.preventDefault();
+    const collectionData = {
+      name: collectionName,
+      description: collectionDescription,
+      chunks: [...selectedChunks],
+    };
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(collectionData),
+    };
+    console.log(collectionData);
+    fetch('/api/collection/add', requestOptions)
+      .then((response) => console.log(response.json()))
+      .catch((err) => alert(err));
+
     console.log('Save Button Clicked');
   };
+
+  const [collectionName, setCollectionName] = useState('');
+  const [collectionDescription, setCollectionDescription] = useState('');
+
   return !!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size ? (
     <Box mt={2} className={className} display="flex" flexDirection="column">
       <Box display="flex" flex="1" minHeight={0} className={classes.rootContainer} disabled={processing}>
@@ -418,6 +439,26 @@ const ChunksPicker = ({ entryFile, className }) => {
                 ))}
               </Box>
             </Box>
+          </Box>
+          <Box>
+            FORM GOES HERE
+            <form>
+              <TextField
+                label="collection name"
+                value={collectionName}
+                onChange={(e) => setCollectionName(e.target.value)}
+                required
+                error={collectionName.length ? false : true}
+              />
+              <TextField
+                label="description"
+                value={collectionDescription}
+                onChange={(e) => setCollectionDescription(e.target.value)}
+              />
+              <Button type="submit" onClick={handleSaveCollection} color="primary" disabled={!selectedChunks.size}>
+                Submit
+              </Button>
+            </form>
           </Box>
         </Box>
       </Box>
