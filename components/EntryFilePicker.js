@@ -79,7 +79,7 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFi
         }}
         getOptionLabel={(option) => option.name}
         getOptionSelected={(option, value) => option === value}
-        renderInput={(params) => <TextField {...params} label="Search files" />}
+        renderInput={(params) => <TextField {...params} variant="outlined" label="Search files" />}
       />
     </Box>
   );
