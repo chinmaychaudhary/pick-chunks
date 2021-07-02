@@ -92,7 +92,7 @@ function Add() {
   const { data: dataReceived, loading: dataLoading } = useFetch('/api/files');
 
   useEffect(() => {
-    if (dataReceived) {
+    if (dataReceived != null) {
       var files: { filepath: any; name: string }[] = [];
       dataReceived.files.forEach((item: any) => {
         const relPath = relativePath(item, dataReceived?.directory);

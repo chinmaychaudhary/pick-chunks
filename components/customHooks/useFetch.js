@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 
 export const useFetch = (url) => {
   const isCurrent = useRef(true);
-  const [state, setState] = useState({ data: any, loading: true });
+  const [state, setState] = useState({ data: null, loading: true });
 
   useEffect(() => {
     setState((state) => ({ data: state.data, loading: true }));

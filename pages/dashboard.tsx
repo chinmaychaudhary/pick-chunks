@@ -70,14 +70,10 @@ function Dashboard() {
   const classes = useStyles();
   const { data: dataReceived, loading: dataLoading } = useFetch('api/collection/list');
 
-  const [chosenItem, setChosenItem] = useState({
-    name: '',
-  });
+  const [chosenItem, setChosenItem] = useState({ name: '' });
 
   const chooseCollection = (name: string) => {
-    setChosenItem({
-      name: name,
-    });
+    setChosenItem({ name: name });
   };
 
   const previewChips = getChunksfromName(dataReceived, chosenItem.name);
