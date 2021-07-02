@@ -61,9 +61,7 @@ const run = async () => {
 
   server.use('*', (req, _, next) => {
     req.srcDir = resolvedRoot;
-    if (existsSync(resolvedConfigPath)) {
-      req.configPath = resolvedConfigPath;
-    }
+    req.configPath = resolvedConfigPath;
     next();
   });
 

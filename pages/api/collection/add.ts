@@ -14,6 +14,7 @@ export default async function handler(req: any, res: NextApiResponse<Data>) {
         status: 'success',
       });
     } catch (err) {
+      console.log(err);
       res.status(500).json({
         status: err,
       });
