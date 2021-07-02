@@ -27,7 +27,7 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
-import { Button } from '@material-ui/core';
+import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
@@ -419,6 +419,30 @@ const ChunksPicker = ({ entryFile, className }) => {
                 top="0"
                 overflow="auto"
               >
+                <form>
+                  <Grid container spacing={3}>
+                    <Grid item xs={4}>
+                      <TextField
+                        label="Name"
+                        value={collectionName}
+                        onChange={(e) => setCollectionName(e.target.value)}
+                        variant="outlined"
+                        fullWidth={true}
+                        required
+                        error={collectionName.length ? false : true}
+                      />
+                    </Grid>
+                    <Grid item xs>
+                      <TextField
+                        label="Description"
+                        variant="outlined"
+                        fullWidth={true}
+                        value={collectionDescription}
+                        onChange={(e) => setCollectionDescription(e.target.value)}
+                      />
+                    </Grid>
+                  </Grid>
+                </form>
                 {[...selectedChunks].map((chunk) => (
                   <motion.div
                     key={chunk}
@@ -439,26 +463,6 @@ const ChunksPicker = ({ entryFile, className }) => {
                 ))}
               </Box>
             </Box>
-          </Box>
-          <Box>
-            FORM GOES HERE
-            <form>
-              <TextField
-                label="collection name"
-                value={collectionName}
-                onChange={(e) => setCollectionName(e.target.value)}
-                required
-                error={collectionName.length ? false : true}
-              />
-              <TextField
-                label="description"
-                value={collectionDescription}
-                onChange={(e) => setCollectionDescription(e.target.value)}
-              />
-              <Button type="submit" onClick={handleSaveCollection} color="primary" disabled={!selectedChunks.size}>
-                Submit
-              </Button>
-            </form>
           </Box>
         </Box>
       </Box>
