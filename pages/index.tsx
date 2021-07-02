@@ -16,8 +16,8 @@ import { EntryFilePicker } from '../components/EntryFilePicker';
 import { ChunksPicker } from '../components/ChunksPicker';
 
 import { Logo } from '../components/icons/Logo';
-import Navbar from '../components/Navbar';
 import { useFetch } from '../components/customHooks/useFetch';
+import Layout from '../components/Layout';
 const useStyles = makeStyles((theme) => ({
   flexNone: { flex: '0 0 auto' },
   flex1: { flex: '1', minHeight: '0' },
@@ -80,7 +80,7 @@ const shortcutsInfo = [
   },
 ];
 
-function App() {
+function Add() {
   const classes = useStyles();
   function relativePath(path: string, directory: string | any[]) {
     const rel = path.substring(directory.length + 1);
@@ -150,82 +150,85 @@ function App() {
   }, []);
 
   return (
-    <Box className={classes.mainContent} p={5}>
-      <Navbar />
-      <Box className={classes.header} borderRadius={8}>
-        <Box display="flex" flexDirection="row" flex="0 0 auto" justifyContent="flex-start" alignItems="flex-start">
-          <Logo className={classes.logo} />
-          <Typography variant="h5" color="textPrimary">
-            Pick Chunks
-          </Typography>
+    <Box>
+      <Layout>
+        <Box className={classes.mainContent} p={5}>
+          <Box className={classes.header} borderRadius={8}>
+            <Box display="flex" flexDirection="row" flex="0 0 auto" justifyContent="flex-start" alignItems="flex-start">
+              <Logo className={classes.logo} />
+              <Typography variant="h5" color="textPrimary">
+                Pick Chunks
+              </Typography>
+            </Box>
+            <Box>
+              <IconButton
+                onClick={handleShortcutClick}
+                ref={btnRef}
+                aria-label="shortcuts"
+                className={classes.shortcutIcon}
+              >
+                <KeyboardOutlinedIcon fontSize="large" />
+              </IconButton>
+              <Popover
+                id="shortcuts"
+                open={showPopover}
+                anchorEl={btnRef.current}
+                onClose={hideShortcutPopover}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'center',
+                }}
+              >
+                <List component="nav" className={classes.popover} aria-label="shortcuts popover">
+                  {clickInfo.map(({ cmd, desc }, index) => (
+                    <ListItem key={cmd} divider={index === clickInfo.length - 1}>
+                      <Box display="flex" alignItems="center" flex="1">
+                        <ListItemText className={classes.shortcutCmd}>
+                          <Typography color="secondary">
+                            <Box component="span">{cmd}</Box>
+                          </Typography>
+                        </ListItemText>
+                        <ListItemText primary={desc} />
+                      </Box>
+                    </ListItem>
+                  ))}
+                  {shortcutsInfo.map(({ cmd, desc }, index) => (
+                    <ListItem key={cmd}>
+                      <Box display="flex" alignItems="center" flex="1">
+                        <ListItemText className={classes.shortcutCmd}>
+                          <Typography color="secondary">{cmd}</Typography>
+                        </ListItemText>
+                        <ListItemText primary={desc} />
+                      </Box>
+                    </ListItem>
+                  ))}
+                </List>
+              </Popover>
+            </Box>
+          </Box>
+          {dataLoading ? (
+            <Typography component="div" variant="h4">
+              <Skeleton />
+            </Typography>
+          ) : (
+            <>
+              <EntryFilePicker
+                className={classes.flexNone}
+                entryFile={entryFile}
+                onEntryFileChange={setEntryFile}
+                allFiles={allFiles}
+              />
+              <ChunksPicker className={classes.flex1} entryFile={entryFile} />
+            </>
+          )}
         </Box>
-        <Box>
-          <IconButton
-            onClick={handleShortcutClick}
-            ref={btnRef}
-            aria-label="shortcuts"
-            className={classes.shortcutIcon}
-          >
-            <KeyboardOutlinedIcon fontSize="large" />
-          </IconButton>
-          <Popover
-            id="shortcuts"
-            open={showPopover}
-            anchorEl={btnRef.current}
-            onClose={hideShortcutPopover}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'center',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'center',
-            }}
-          >
-            <List component="nav" className={classes.popover} aria-label="shortcuts popover">
-              {clickInfo.map(({ cmd, desc }, index) => (
-                <ListItem key={cmd} divider={index === clickInfo.length - 1}>
-                  <Box display="flex" alignItems="center" flex="1">
-                    <ListItemText className={classes.shortcutCmd}>
-                      <Typography color="secondary">
-                        <Box component="span">{cmd}</Box>
-                      </Typography>
-                    </ListItemText>
-                    <ListItemText primary={desc} />
-                  </Box>
-                </ListItem>
-              ))}
-              {shortcutsInfo.map(({ cmd, desc }, index) => (
-                <ListItem key={cmd}>
-                  <Box display="flex" alignItems="center" flex="1">
-                    <ListItemText className={classes.shortcutCmd}>
-                      <Typography color="secondary">{cmd}</Typography>
-                    </ListItemText>
-                    <ListItemText primary={desc} />
-                  </Box>
-                </ListItem>
-              ))}
-            </List>
-          </Popover>
-        </Box>
-      </Box>
-      {dataLoading ? (
-        <Typography component="div" variant="h4">
-          <Skeleton />
-        </Typography>
-      ) : (
-        <>
-          <EntryFilePicker
-            className={classes.flexNone}
-            entryFile={entryFile}
-            onEntryFileChange={setEntryFile}
-            allFiles={allFiles}
-          />
-          <ChunksPicker className={classes.flex1} entryFile={entryFile} />
-        </>
-      )}
+      </Layout>
     </Box>
   );
 }
 
-export default App;
+export default Add;
