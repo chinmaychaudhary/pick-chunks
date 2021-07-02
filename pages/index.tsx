@@ -89,13 +89,13 @@ function Add() {
   const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
   const [allFiles, setAllFiles] = useState([] as any);
   //const [loading, setLoading] = useState(true);
-  const { data: dataRecieved, loading: dataLoading } = useFetch('/api/files');
+  const { data: dataReceived, loading: dataLoading } = useFetch('/api/files');
 
   useEffect(() => {
-    if (dataRecieved) {
+    if (dataReceived) {
       var files: { filepath: any; name: string }[] = [];
-      dataRecieved.files.forEach((item: any) => {
-        const relPath = relativePath(item, dataRecieved.directory);
+      dataReceived.files.forEach((item: any) => {
+        const relPath = relativePath(item, dataReceived?.directory);
         files.push({
           filepath: item,
           name: relPath,
@@ -105,7 +105,7 @@ function Add() {
       setEntryFile(files[0]);
       // setLoading(false);
     }
-  }, [dataRecieved]);
+  }, [dataReceived]);
 
   // useEffect(() => {
   //   const fetchData = async () => {
