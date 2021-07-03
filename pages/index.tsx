@@ -79,13 +79,13 @@ const shortcutsInfo = [
     desc: 'Deselect Subgraph',
   },
 ];
-
+const relativePath = (path: string, directory: string | any[]) => {
+  const rel = path.substring(directory.length + 1);
+  return rel;
+};
 function Add() {
   const classes = useStyles();
-  function relativePath(path: string, directory: string | any[]) {
-    const rel = path.substring(directory.length + 1);
-    return rel;
-  }
+
   const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
   const [allFiles, setAllFiles] = useState([] as any);
   //const [loading, setLoading] = useState(true);

@@ -313,7 +313,8 @@ const ChunksPicker = ({ entryFile, className }) => {
     console.log('Save Button Clicked');
   };
 
-  const [collectionName, setCollectionName] = useState('');
+  const [collectionName, setCollectionName] = useState('Name');
+  const [emptyNameError, setEmptyNameError] = useState(false);
   const [collectionDescription, setCollectionDescription] = useState('');
 
   return !!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size ? (
@@ -424,12 +425,12 @@ const ChunksPicker = ({ entryFile, className }) => {
                     <Grid item xs={4}>
                       <TextField
                         label="Name"
+                        error={emptyNameError}
                         value={collectionName}
                         onChange={(e) => setCollectionName(e.target.value)}
                         variant="outlined"
                         fullWidth={true}
                         required
-                        error={collectionName.length ? false : true}
                       />
                     </Grid>
                     <Grid item xs>

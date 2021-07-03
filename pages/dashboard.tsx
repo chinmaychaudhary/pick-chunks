@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import { flexbox } from '@material-ui/system';
-
+import { TextField } from '@material-ui/core';
 const useStyles = makeStyles((theme) => ({
   mainContent: {
     display: 'flex',
@@ -36,6 +36,9 @@ const useStyles = makeStyles((theme) => ({
     flex: '0 0 auto',
     justifyContent: 'space-between',
   },
+  listRoot: {
+    backgroundColor: theme.palette.background.paper,
+  },
 }));
 
 import { useFetch } from '../components/customHooks/useFetch';
@@ -47,10 +50,12 @@ import { motion } from 'framer-motion';
 import Layout from '../components/Layout';
 import Typography from '@material-ui/core/Typography';
 import { Logo } from '../components/icons/Logo';
+import { borders } from '@material-ui/system';
+import FuzzySearch from 'fuzzy-search';
 const getChunksfromName = (objects: null | { name: string; description: string; chunks: string[] }[], name: string) => {
   if (!name) {
     console.log('Choose an item');
-    return <div>Choose an item!</div>;
+    return <div>Choose a Collection!</div>;
   }
   if (!objects) {
     console.log('No Collection available yet!');
@@ -61,7 +66,9 @@ const getChunksfromName = (objects: null | { name: string; description: string; 
 
   return chunks?.map((chunk: string) => (
     <motion.div key={chunk} style={{ display: 'inline-block' }} animate={{ scale: 1 }} initial={{ scale: 0.5 }}>
-      <Chip label={chunk} variant="outlined" data-chunk-name={chunk} />
+      <Box p={1}>
+        <Chip label={chunk} variant="outlined" data-chunk-name={chunk} />
+      </Box>
     </motion.div>
   ));
 };
@@ -78,6 +85,15 @@ function Dashboard() {
 
   const previewChips = getChunksfromName(dataReceived, chosenItem.name);
 
+  // FUZZY SEARCH
+  const fuzSearch = useMemo(() => {
+    return new FuzzySearch(dataReceived, ['name']);
+  }, [dataReceived]);
+
+  const [keyword, setKeyword] = useState('');
+  const filteredCollection = keyword ? fuzSearch.search(keyword) : dataReceived;
+  console.log(filteredCollection);
+
   return (
     <Box>
       <Layout>
@@ -89,35 +105,74 @@ function Dashboard() {
                 Pick Chunks
               </Typography>
             </Box>
-            <Box></Box>
           </Box>
           {dataLoading ? null : (
-            <Box display="flex" flexDirection="row" justifyContent="space-evenly" m={1} bgcolor="background.paper">
-              <Box width="40%" border="1px dotted red">
-                Hi, list Box
-                <List className={classes.list} component="nav">
-                  {!dataReceived ? (
+            <Box
+              display="flex"
+              flexDirection="column"
+              justifyContent="flex-start"
+              m={1}
+              borderRadius="borderRadius"
+              minHeight="50vh"
+            >
+              <Box display="flex" justifyContent="space-between" m={1}>
+                {/*input field for to search for a Collection*/}
+                <TextField
+                  variant="outlined"
+                  style={{ marginBottom: '20px', width: '35%' }}
+                  label="Search Collection"
+                  value={keyword}
+                  onChange={(e) => {
+                    setKeyword(e.target.value);
+                  }}
+                />
+                <TextField
+                  variant="outlined"
+                  label="Description"
+                  value={'hi'}
+                  style={{ marginBottom: '20px', width: '60%' }}
+                />
+              </Box>
+              <Box display="flex" flexDirection="row" justifyContent="space-between" flexGrow={1}>
+                <Box
+                  width="35%"
+                  //border="1px solid white"
+                  borderRadius="borderRadius"
+                  className={classes.listRoot}
+                  m={1}
+                >
+                  {!filteredCollection.length ? (
                     <div>Make Collections To See Them Here</div>
                   ) : (
-                    dataReceived.map((item: { name: string }) => (
-                      <ListItem
-                        button
-                        onClick={() => {
-                          chooseCollection(item.name);
-                        }}
-                        key={item.name}
-                        data-name={item.name}
-                        selected={chosenItem.name === item.name}
-                      >
-                        <ListItemText primary={item.name} />
-                      </ListItem>
-                    ))
+                    <List className={classes.list} component="nav">
+                      {filteredCollection.map((item: { name: string }) => (
+                        <ListItem
+                          button
+                          onClick={() => {
+                            chooseCollection(item.name);
+                          }}
+                          key={item.name}
+                          data-name={item.name}
+                          selected={chosenItem.name === item.name}
+                        >
+                          <ListItemText primary={item.name} />
+                        </ListItem>
+                      ))}
+                    </List>
                   )}
-                </List>
-              </Box>
-              <Box overflow="auto" width="40%" border="1px dotted red">
-                Hi, preview Box
-                <Box>{previewChips}</Box>
+                </Box>
+                <Box
+                  overflow="auto"
+                  width="60%"
+                  borderRadius="borderRadius"
+                  border="1px solid white"
+                  color="primary.main"
+                  m={1}
+                >
+                  <Box borderRadius="borderRadius" borderColor="primary.main" p={1} overflow="auto">
+                    {previewChips}
+                  </Box>
+                </Box>
               </Box>
             </Box>
           )}
