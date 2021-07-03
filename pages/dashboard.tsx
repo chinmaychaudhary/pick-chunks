@@ -52,8 +52,14 @@ import Typography from '@material-ui/core/Typography';
 import { Logo } from '../components/icons/Logo';
 import { borders } from '@material-ui/system';
 import FuzzySearch from 'fuzzy-search';
+import { DescriptionTwoTone } from '@material-ui/icons';
+
+function isEmpty(str: string) {
+  return !str || str.length === 0;
+}
+// works clean
 const getChunksfromName = (objects: null | { name: string; description: string; chunks: string[] }[], name: string) => {
-  if (!name) {
+  if (isEmpty(name)) {
     console.log('Choose an item');
     return <div>Choose a Collection!</div>;
   }
@@ -72,6 +78,14 @@ const getChunksfromName = (objects: null | { name: string; description: string; 
     </motion.div>
   ));
 };
+const getDescriptionFromName = (objects: any[] | null, name: string) => {
+  if (isEmpty(name) || !objects) {
+    return '';
+  }
+  const chosenItemObject = objects.find((object: { name: any }) => object.name === name);
+  const description = chosenItemObject?.description;
+  return description;
+};
 
 function Dashboard() {
   const classes = useStyles();
@@ -84,7 +98,7 @@ function Dashboard() {
   };
 
   const previewChips = getChunksfromName(dataReceived, chosenItem.name);
-
+  const description = getDescriptionFromName(dataReceived, chosenItem.name);
   // FUZZY SEARCH
   const fuzSearch = useMemo(() => {
     return new FuzzySearch(dataReceived, ['name']);
@@ -129,7 +143,7 @@ function Dashboard() {
                 <TextField
                   variant="outlined"
                   label="Description"
-                  value={'hi'}
+                  value={description}
                   style={{ marginBottom: '20px', width: '60%' }}
                 />
               </Box>
@@ -141,11 +155,11 @@ function Dashboard() {
                   className={classes.listRoot}
                   m={1}
                 >
-                  {!filteredCollection.length ? (
+                  {!filteredCollection ? (
                     <div>Make Collections To See Them Here</div>
                   ) : (
                     <List className={classes.list} component="nav">
-                      {filteredCollection.map((item: { name: string }) => (
+                      {filteredCollection.map((item) => (
                         <ListItem
                           button
                           onClick={() => {

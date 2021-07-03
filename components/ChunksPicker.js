@@ -307,7 +307,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     };
     console.log(collectionData);
     fetch('/api/collection/add', requestOptions)
-      .then((response) => console.log(response.json()))
+      .then((response) => console.log(response))
       .catch((err) => alert(err));
 
     console.log('Save Button Clicked');
