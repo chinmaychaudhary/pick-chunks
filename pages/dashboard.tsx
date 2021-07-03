@@ -39,6 +39,9 @@ const useStyles = makeStyles((theme) => ({
   listRoot: {
     backgroundColor: theme.palette.background.paper,
   },
+  card: {
+    minHeight: '20%',
+  },
 }));
 
 import { useFetch } from '../components/customHooks/useFetch';
@@ -52,8 +55,8 @@ import Typography from '@material-ui/core/Typography';
 import { Logo } from '../components/icons/Logo';
 import { borders } from '@material-ui/system';
 import FuzzySearch from 'fuzzy-search';
-import { DescriptionTwoTone } from '@material-ui/icons';
-
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 function isEmpty(str: string) {
   return !str || str.length === 0;
 }
@@ -61,11 +64,19 @@ function isEmpty(str: string) {
 const getChunksfromName = (objects: null | { name: string; description: string; chunks: string[] }[], name: string) => {
   if (isEmpty(name)) {
     console.log('Choose an item');
-    return <div>Choose a Collection!</div>;
+    return (
+      <Typography variant="h5" component="h2">
+        Choose a Collection!
+      </Typography>
+    );
   }
   if (!objects) {
     console.log('No Collection available yet!');
-    return <div>No Collection available yet!</div>;
+    return (
+      <Typography variant="h5" component="h2">
+        No Collection available yet!
+      </Typography>
+    );
   }
   const chosenItemObject = objects.find((object) => object.name === name);
   const chunks = chosenItemObject?.chunks;
@@ -140,12 +151,6 @@ function Dashboard() {
                     setKeyword(e.target.value);
                   }}
                 />
-                <TextField
-                  variant="outlined"
-                  label="Description"
-                  value={description}
-                  style={{ marginBottom: '20px', width: '60%' }}
-                />
               </Box>
               <Box display="flex" flexDirection="row" justifyContent="space-between" flexGrow={1}>
                 <Box
@@ -183,6 +188,22 @@ function Dashboard() {
                   color="primary.main"
                   m={1}
                 >
+                  <Box className={classes.card}>
+                    <Box display="flex" flexDirection="row">
+                      <Box p={1} m={1} width={2 / 5}>
+                        <Typography color="textSecondary">Collection Title</Typography>
+                        <Typography variant="h5" component="h2">
+                          {chosenItem.name}
+                        </Typography>
+                      </Box>
+                      <Box p={1} m={1} width={3 / 5}>
+                        <Typography color="textSecondary">Description</Typography>
+                        <Typography variant="body2" component="p">
+                          {description}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
                   <Box borderRadius="borderRadius" borderColor="primary.main" p={1} overflow="auto">
                     {previewChips}
                   </Box>
