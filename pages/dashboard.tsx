@@ -63,7 +63,6 @@ function isEmpty(str: string) {
 // works clean
 const getChunksfromName = (objects: null | { name: string; description: string; chunks: string[] }[], name: string) => {
   if (isEmpty(name)) {
-    console.log('Choose an item');
     return (
       <Typography variant="h5" component="h2">
         Choose a Collection!
