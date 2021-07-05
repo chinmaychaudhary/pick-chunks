@@ -1,5 +1,5 @@
 {
-  "name": "pick-chunks",
+  "name": "@pick-chunks/pc",
   "version": "0.0.0",
   "bin": {
     "pc": "index.js"
