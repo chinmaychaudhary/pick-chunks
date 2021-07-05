@@ -11,6 +11,7 @@ export const clearStore = () => {
 };
 
 export const getAllChunks = (path: string, root: string): Record<string, any> => {
+  path = resolve(root, path);
   if (store[path] === null) {
     return Promise.resolve({
       path,
