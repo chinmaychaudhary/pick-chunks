@@ -4,10 +4,8 @@ const argParser = require('commander');
 const { resolve } = require('path');
 const { cyanBright, greenBright, bold, gray } = require('chalk');
 const open = require('open');
-const { existsSync } = require('fs');
 
-const dev = process.env.NODE_ENV !== 'production';
-const app = next({ dev });
+const app = next({ dev: false });
 const handle = app.getRequestHandler();
 const DEFAULT_CONFIG_PATH = 'pick-chunks.config.js';
 
