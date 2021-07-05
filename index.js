@@ -7,7 +7,7 @@ const { resolve } = require('path');
 const { cyanBright, greenBright, bold, gray } = require('chalk');
 const open = require('open');
 
-const app = next({ dev: false });
+const app = next({ dev: false, dir: require.resolve('@pick-chunks/pc') });
 const handle = app.getRequestHandler();
 const DEFAULT_CONFIG_PATH = 'pick-chunks.config.js';
 
