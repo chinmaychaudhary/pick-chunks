@@ -7,4 +7,5 @@
 ./styles
 ./utils
 ./.next
+dev-server.js
 !build

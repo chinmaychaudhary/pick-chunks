@@ -8,7 +8,7 @@
     "node": ">=12.18.3"
   },
   "scripts": {
-    "dev": "node index.js",
+    "dev": "node dev-server.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
