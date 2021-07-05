@@ -3,11 +3,11 @@
 const express = require('express');
 const next = require('next');
 const argParser = require('commander');
-const { resolve, dirname } = require('path');
+const { resolve } = require('path');
 const { cyanBright, greenBright, bold, gray } = require('chalk');
 const open = require('open');
 
-const app = next({ dev: false, dir: dirname(require.resolve('@pick-chunks/pc')) });
+const app = next({ dev: true });
 const handle = app.getRequestHandler();
 const DEFAULT_CONFIG_PATH = 'pick-chunks.config.js';
 

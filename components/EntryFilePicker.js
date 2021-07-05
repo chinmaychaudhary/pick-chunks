@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
-
-import { useFileSearchQuery } from '../hooks/api/useFileSearchQuery';
-
-import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 
 const EMPTY_ARRAY = [];
 
+//did not understand this function's use
 function getUniqueMatches(matches) {
   return [...new Set(matches.map(([a, b]) => `${a}-${b}`))].map((v) => v.split('-').map(Number));
 }
 
+//did not understand this function's use
 function getSegments(option) {
   const { name } = option;
   const matches = getUniqueMatches(option.matches[0].indices);
@@ -44,24 +41,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function EntryFilePicker({ entryFile, onEntryFileChange, className }) {
+export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFiles }) {
+  console.log('entryfile started to render');
   const classes = useStyles();
-  const [searchKeyword, setSearchKeyword] = useState(entryFile?.name || '');
-  const { data, status } = useFileSearchQuery(searchKeyword);
+  const [searchKeyword, setSearchKeyword] = useState(entryFile?.filepath || '');
+  const data = allFiles;
   const [open, setOpen] = React.useState(false);
-  const loading = status === 'loading';
-
   return (
     <Box className={className} display="flex" alignItems="flex-end" mb={2}>
-      <Typography variant="h5" color="primary" className={classes.title}>
-        Entry
-      </Typography>
       <Autocomplete
         id="asynchronous-demo"
         style={{ width: '100%' }}
+        // review the below ones
         value={entryFile}
+        options={data || EMPTY_ARRAY}
         onChange={(event, newValue) => {
-          onEntryFileChange(newValue || { filepath: '', name: '' });
+          onEntryFileChange(newValue);
         }}
         open={open}
         onOpen={() => {
@@ -75,45 +70,8 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className }) {
           setSearchKeyword(newInputValue);
         }}
         getOptionLabel={(option) => option.name}
-        getOptionSelected={(option, value) => option.name === value.name}
-        options={data || EMPTY_ARRAY}
-        loading={loading}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Search files"
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (
-                <React.Fragment>
-                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                  {params.InputProps.endAdornment}
-                </React.Fragment>
-              ),
-            }}
-          />
-        )}
-        // renderOption={(option) => {
-        // 	return (
-        // 		<Typography key={option.name}>{option.name}</Typography>
-        // 	)
-        // 	console.log(option);
-        // 	const segments = getSegments(option);
-        // 	console.log(option);
-        // 	return (
-        // 		<Typography key={option.name}>
-        // 			{segments.map((segment, index) =>
-        // 				segment.isHiglight ? (
-        // 					<Typography display="inline" key={index} color="primary">
-        // 						{segment.value}
-        // 					</Typography>
-        // 				) : (
-        // 					<span>{segment.value}</span>
-        // 				)
-        // 			)}
-        // 		</Typography>
-        // 	);
-        // }}
+        getOptionSelected={(option, value) => option === value}
+        renderInput={(params) => <TextField {...params} variant="outlined" label="Pick Entry" />}
       />
     </Box>
   );
