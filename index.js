@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const express = require('express');
 const next = require('next');
 const argParser = require('commander');
