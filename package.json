@@ -1,6 +1,6 @@
 {
   "name": "pick-chunks",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "bin": {
     "pc": "index.js"
   },
