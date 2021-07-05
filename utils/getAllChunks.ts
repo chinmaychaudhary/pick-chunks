@@ -10,7 +10,7 @@ export const clearStore = () => {
   store = {};
 };
 
-export const getAllChunks = (path: string): Record<string, any> => {
+export const getAllChunks = (path: string, root: string): Record<string, any> => {
   if (store[path] === null) {
     return Promise.resolve({
       path,
@@ -71,7 +71,7 @@ export const getAllChunks = (path: string): Record<string, any> => {
         continue;
       }
 
-      const relativePath = relative(cwd, pathToChunk);
+      const relativePath = relative(root, pathToChunk);
       chunks.add(relativePath);
     }
   });
@@ -93,7 +93,7 @@ export const getAllChunks = (path: string): Record<string, any> => {
         continue;
       }
 
-      children.push(getAllChunks(pathToStaticImport));
+      children.push(getAllChunks(pathToStaticImport, root));
     }
   }
 

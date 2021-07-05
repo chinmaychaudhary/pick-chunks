@@ -1,7 +1,6 @@
 {
-  "name": "pick-chunks",
-  "version": "1.0.1",
-  "private": true,
+  "name": "@pick-chunks/pc",
+  "version": "0.0.4",
   "bin": {
     "pc": "index.js"
   },
@@ -9,7 +8,7 @@
     "node": ">=12.18.3"
   },
   "scripts": {
-    "dev": "node index.js",
+    "dev": "node dev-server.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -39,10 +38,18 @@
   },
   "devDependencies": {
     "@types/babel__generator": "^7.6.2",
+    "@types/fuzzy-search": "^2.1.0",
     "@types/react": "17.0.11",
+    "@types/react-window": "^1.8.3",
+    "babel-plugin-styled-components": "^1.12.0",
     "eslint": "7.29.0",
     "eslint-config-next": "11.0.1",
+    "np": "^7.5.0",
     "prettier": "^2.3.1",
     "typescript": "4.3.4"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
