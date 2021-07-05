@@ -82,8 +82,8 @@ function Add() {
   useEffect(() => {
     if (dataReceived != null) {
       var files: { filepath: any; name: string }[] = [];
-      dataReceived.files.forEach((item: any) => {
-        const relPath = relativePath(item, dataReceived?.directory);
+      (dataReceived as any).files.forEach((item: any) => {
+        const relPath = relativePath(item, (dataReceived as any)?.directory);
         files.push({
           filepath: item,
           name: relPath,
