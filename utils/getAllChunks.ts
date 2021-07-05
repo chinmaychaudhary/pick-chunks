@@ -1,17 +1,16 @@
-import * as parser from "@babel/parser";
-import traverse from "@babel/traverse";
-import { existsSync, readFileSync } from "fs";
-import { resolve, dirname } from "path";
+import * as parser from '@babel/parser';
+import traverse from '@babel/traverse';
+import { existsSync, readFileSync } from 'fs';
+import { resolve, dirname, relative } from 'path';
 
 let store: Record<string, any> = {};
-const extensions = [".js", ".ts", ".tsx"];
+const extensions = ['.js', '.ts', '.tsx'];
 
 export const clearStore = () => {
   store = {};
 };
 
 export const getAllChunks = (path: string): Record<string, any> => {
-
   if (store[path] === null) {
     return Promise.resolve({
       path,
@@ -33,8 +32,8 @@ export const getAllChunks = (path: string): Record<string, any> => {
 
   const code = readFileSync(path).toString();
   const ast = parser.parse(code, {
-    sourceType: "module",
-    plugins: ["jsx", "typescript", "classProperties", "exportDefaultFrom"],
+    sourceType: 'module',
+    plugins: ['jsx', 'typescript', 'classProperties', 'exportDefaultFrom'],
   });
 
   traverse(ast, {
@@ -42,7 +41,7 @@ export const getAllChunks = (path: string): Record<string, any> => {
       staticImports.push(path.node.source.value);
     },
     CallExpression(path: any) {
-      if (path.node.callee.type === "Import") {
+      if (path.node.callee.type === 'Import') {
         dynamicImports.add(path.node.arguments[0].value);
       }
     },
@@ -72,7 +71,8 @@ export const getAllChunks = (path: string): Record<string, any> => {
         continue;
       }
 
-      chunks.add(pathToChunk);
+      const relativePath = relative(cwd, pathToChunk);
+      chunks.add(relativePath);
     }
   });
   dynamicImports.clear();
