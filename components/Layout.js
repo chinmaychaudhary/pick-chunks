@@ -1,60 +1,90 @@
 import { makeStyles } from '@material-ui/core/styles';
 import React from 'react';
 import Box from '@material-ui/core/Box';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
-import { ListItemIcon } from '@material-ui/core';
-import HomeIcon from '@material-ui/icons/Home';
-import Link from '@material-ui/core/Link';
-import CollectionsIcon from '@material-ui/icons/Collections';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import AddCollectionIcon from '@material-ui/icons/NoteAddOutlined';
+import DashboardIcon from '@material-ui/icons/FolderOpenOutlined';
+import PageIcon from '@material-ui/icons/ChevronRightOutlined';
+import Typography from '@material-ui/core/Typography';
 import { useState } from 'react';
+import { Logo } from './icons/Logo';
 import { useRouter } from 'next/router';
+
 const useStyles = makeStyles((theme) => ({
   drawer: {
     color: 'red',
-    width: '200px',
+    width: '60px',
     height: '100vh',
+    backgroundColor: '#3f3f3f',
   },
   page: {
-    width: '80vw',
+    width: 'calc(100vw - 60px)',
+  },
+  tab: {
+    minWidth: '60px',
+    width: '60px',
+    height: '60px',
+  },
+  logo: {
+    flex: '0 0 auto',
+    height: 30,
+    width: 30,
+    marginRight: theme.spacing(2),
   },
 }));
+
+const routesToName = {
+  '/': 'Create New Collection',
+  '/dashboard': 'Collections',
+};
 
 const Layout = ({ children }) => {
   const classes = useStyles();
   const router = useRouter();
   const [selectedlink, setSelectedLink] = useState(router.pathname);
-  const handleLinkSelect = (e) => {
-    console.log('handleLink', e);
+  const handleLinkSelect = (e, value) => {
+    if (value !== selectedlink) {
+      router.push(value);
+    }
   };
+
   return (
     <Box display="flex" flexDirection="row">
       <div className={classes.drawer}>
-        <List>
-          <ListItem button component={Link} href="/" selected={selectedlink === '/'} onClick={handleLinkSelect}>
-            <ListItemIcon>
-              <HomeIcon />
-            </ListItemIcon>
-            <ListItemText primary="Add" />
-          </ListItem>
-          <ListItem
-            button
-            component={Link}
-            href="/dashboard"
-            selected={selectedlink === '/dashboard'}
-            onClick={handleLinkSelect}
-          >
-            <ListItemIcon>
-              <CollectionsIcon />
-            </ListItemIcon>
-            <ListItemText primary="Collections" />
-          </ListItem>
-          <Divider />
-        </List>
+        <Tabs
+          value={selectedlink}
+          onChange={handleLinkSelect}
+          orientation="vertical"
+          indicatorColor="primary"
+          textColor="primary"
+          aria-label="icon tabs example"
+        >
+          <Tab value="/" classes={{ root: classes.tab }} icon={<AddCollectionIcon fontSize="large" />} />
+          <Tab value="/dashboard" classes={{ root: classes.tab }} icon={<DashboardIcon fontSize="large" />} />
+        </Tabs>
       </div>
-      <div className={classes.page}>{children}</div>
+      <div className={classes.page}>
+        <Box
+          display="flex"
+          flexDirection="row"
+          flex="0 0 auto"
+          justifyContent="flex-start"
+          alignItems="center"
+          px={5}
+          py={2}
+        >
+          <Logo className={classes.logo} />
+          <Typography variant="h6" color="textPrimary">
+            Pick Chunks
+          </Typography>
+          <PageIcon />
+          <Typography varient="subtitle1" color="textSecondary">
+            {routesToName[selectedlink]}
+          </Typography>
+        </Box>
+        <div>{children}</div>
+      </div>
     </Box>
   );
 };

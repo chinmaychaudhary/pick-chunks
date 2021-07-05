@@ -341,13 +341,13 @@ const ChunksPicker = ({ entryFile, className }) => {
                 onClick={handleCrumbClick}
                 data-index={index}
               >
-                <Typography variant="h6" color="secondary">
+                <Typography variant="subtitle1" color="secondary">
                   {/*chunkName*/ filepath}
                 </Typography>
               </Link>
             ))}
             {/*The latest breadcrumb [Accessories] */}
-            <Typography variant="h6" color="textPrimary">
+            <Typography variant="subtitle1" color="textPrimary">
               {crumbs[crumbs.length - 1].filepath}
             </Typography>
           </Breadcrumbs>

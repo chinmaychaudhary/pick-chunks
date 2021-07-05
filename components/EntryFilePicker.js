@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-
-import { useFileSearchQuery } from '../hooks/api/useFileSearchQuery';
-
-import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -54,9 +49,6 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFi
   const [open, setOpen] = React.useState(false);
   return (
     <Box className={className} display="flex" alignItems="flex-end" mb={2}>
-      <Typography variant="h5" color="primary" className={classes.title}>
-        Entry
-      </Typography>
       <Autocomplete
         id="asynchronous-demo"
         style={{ width: '100%' }}
@@ -79,7 +71,7 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFi
         }}
         getOptionLabel={(option) => option.name}
         getOptionSelected={(option, value) => option === value}
-        renderInput={(params) => <TextField {...params} variant="outlined" label="Search files" />}
+        renderInput={(params) => <TextField {...params} variant="outlined" label="Pick Entry" />}
       />
     </Box>
   );

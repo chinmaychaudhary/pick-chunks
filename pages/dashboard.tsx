@@ -24,12 +24,6 @@ const useStyles = makeStyles((theme) => ({
     overflow: 'auto',
     maxHeight: '400px',
   },
-  logo: {
-    flex: '0 0 auto',
-    height: 44,
-    width: 44,
-    marginRight: theme.spacing(2),
-  },
   header: {
     display: 'flex',
     flexDirection: 'row',
@@ -53,14 +47,12 @@ import { motion } from 'framer-motion';
 import Layout from '../components/Layout';
 import Typography from '@material-ui/core/Typography';
 import { Logo } from '../components/icons/Logo';
-import { borders } from '@material-ui/system';
 import FuzzySearch from 'fuzzy-search';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
+
 function isEmpty(str: string) {
   return !str || str.length === 0;
 }
-// works clean
+
 const getChunksfromName = (objects: null | { name: string; description: string; chunks: string[] }[], name: string) => {
   if (isEmpty(name)) {
     return (
@@ -88,6 +80,7 @@ const getChunksfromName = (objects: null | { name: string; description: string; 
     </motion.div>
   ));
 };
+
 const getDescriptionFromName = (objects: any[] | null, name: string) => {
   if (isEmpty(name) || !objects) {
     return '';
@@ -111,7 +104,7 @@ function Dashboard() {
   const description = getDescriptionFromName(dataReceived, chosenItem.name);
   // FUZZY SEARCH
   const fuzSearch = useMemo(() => {
-    return new FuzzySearch(dataReceived, ['name']);
+    return new FuzzySearch(dataReceived as any, ['name']);
   }, [dataReceived]);
 
   const [keyword, setKeyword] = useState('');
@@ -122,14 +115,6 @@ function Dashboard() {
     <Box>
       <Layout>
         <Box className={classes.mainContent} p={5}>
-          <Box className={classes.header} borderRadius={8}>
-            <Box display="flex" flexDirection="row" flex="0 0 auto" justifyContent="flex-start" alignItems="flex-start">
-              <Logo className={classes.logo} />
-              <Typography variant="h5" color="textPrimary">
-                Pick Chunks
-              </Typography>
-            </Box>
-          </Box>
           {dataLoading ? null : (
             <Box
               display="flex"
@@ -163,7 +148,7 @@ function Dashboard() {
                     <div>Make Collections To See Them Here</div>
                   ) : (
                     <List className={classes.list} component="nav">
-                      {filteredCollection.map((item) => (
+                      {filteredCollection.map((item: any) => (
                         <ListItem
                           button
                           onClick={() => {
