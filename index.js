@@ -73,6 +73,9 @@ const run = async () => {
   });
 
   server.all('*', (req, res) => {
+    if (req.path === '/version') {
+      return res.send(require('./package.json').version);
+    }
     return handle(req, res);
   });
 
