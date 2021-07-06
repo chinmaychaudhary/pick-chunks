@@ -1,6 +1,4 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
-import useLocalStorage from 'react-use/lib/useLocalStorage';
-
 import Popover from '@material-ui/core/Popover';
 import IconButton from '@material-ui/core/IconButton';
 import KeyboardOutlinedIcon from '@material-ui/icons/KeyboardOutlined';
@@ -11,13 +9,11 @@ import { makeStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-
 import { EntryFilePicker } from '../components/EntryFilePicker';
 import { ChunksPicker } from '../components/ChunksPicker';
-
-import { Logo } from '../components/icons/Logo';
 import { useFetch } from '../components/customHooks/useFetch';
 import Layout from '../components/Layout';
+
 const useStyles = makeStyles((theme) => ({
   flexNone: { flex: '0 0 auto' },
   flex1: { flex: '1', minHeight: '0' },
@@ -67,16 +63,18 @@ const shortcutsInfo = [
     desc: 'Deselect Subgraph',
   },
 ];
+
 const relativePath = (path: string, directory: string | any[]) => {
   const rel = path.substring(directory.length + 1);
   return rel;
 };
+
 function Add() {
   const classes = useStyles();
 
   const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
   const [allFiles, setAllFiles] = useState([] as any);
-  //const [loading, setLoading] = useState(true);
+
   const { data: dataReceived, loading: dataLoading } = useFetch('/api/files');
 
   useEffect(() => {
@@ -94,39 +92,6 @@ function Add() {
       // setLoading(false);
     }
   }, [dataReceived]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const response = await fetch('/api/files');
-  //     const data = await response.json();
-  //     var files: { filepath: any; name: string }[] = [];
-  //     data.files.forEach((item: any) => {
-  //       const relPath = relativePath(item, data.directory);
-  //       files.push({
-  //         filepath: item,
-  //         name: relPath,
-  //       });
-  //     });
-  //     setAllFiles(files);
-  //     setEntryFile(files[0]);
-  //   };
-
-  //   if (isCurrent.current) {
-  //     fetchData();
-  //   }
-  //   return () => {
-  //     isCurrent.current = false;
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   if (allFiles.length > 0) {
-  //     setLoading(false);
-  //   }
-  //   return () => {
-  //     isCurrent.current = false;
-  //   };
-  // }, [allFiles]);
 
   const btnRef = useRef(null);
   const [showPopover, setPopoverVisibility] = useState(false);

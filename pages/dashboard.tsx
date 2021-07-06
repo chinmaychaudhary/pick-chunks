@@ -1,8 +1,16 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
-import { flexbox } from '@material-ui/system';
 import { TextField } from '@material-ui/core';
+import { useFetch } from '../components/customHooks/useFetch';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import { Chip, List } from '@material-ui/core';
+import { motion } from 'framer-motion';
+import FuzzySearch from 'fuzzy-search';
+import Typography from '@material-ui/core/Typography';
+import Layout from '../components/Layout';
+
 const useStyles = makeStyles((theme) => ({
   mainContent: {
     display: 'flex',
@@ -37,17 +45,6 @@ const useStyles = makeStyles((theme) => ({
     minHeight: '20%',
   },
 }));
-
-import { useFetch } from '../components/customHooks/useFetch';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import { FixedSizeList } from 'react-window';
-import { Checkbox, Chip, List } from '@material-ui/core';
-import { motion } from 'framer-motion';
-import Layout from '../components/Layout';
-import Typography from '@material-ui/core/Typography';
-import { Logo } from '../components/icons/Logo';
-import FuzzySearch from 'fuzzy-search';
 
 function isEmpty(str: string) {
   return !str || str.length === 0;
