@@ -1,8 +1,11 @@
 components/*
-DemoFilesForTesting/*
+test/*
 hooks/*
 node_modules
 public/*
+pages/*
+.next/cache/*
 styles
 utils
 dev-server.js
+pick-chunks.config.js
