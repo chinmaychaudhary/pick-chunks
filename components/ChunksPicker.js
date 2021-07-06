@@ -89,7 +89,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path: path }),
     };
-    console.log('FETCH CALLED WITH PATH:', path);
+    //console.log('FETCH CALLED WITH PATH:', path);
     fetch('/api/chunks', requestOptions)
       .then((response) => response.json())
       .then((data) => {
@@ -99,7 +99,7 @@ const ChunksPicker = ({ entryFile, className }) => {
           };
         });
         setChildrenChunks(chunkWithName);
-        console.log('FETCH CALLED:', chunkWithName);
+        //console.log('FETCH CALLED:', chunkWithName);
       })
       .catch((err) => alert(err));
   }, [crumbs]);
@@ -310,7 +310,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       .then((response) => console.log(response))
       .catch((err) => alert(err));
 
-    console.log('Save Button Clicked');
+    //console.log('Save Button Clicked');
   };
 
   const [collectionName, setCollectionName] = useState('Name');
