@@ -1,23 +1,28 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import FuzzySearch from 'fuzzy-search';
+
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
-import { flexbox } from '@material-ui/system';
-import { TextField } from '@material-ui/core';
+import { IconButton, TextField } from '@material-ui/core';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import { Chip, List } from '@material-ui/core';
+import { motion } from 'framer-motion';
+import Typography from '@material-ui/core/Typography';
+
+import Layout from '../components/Layout';
+import { useFetch } from '../components/customHooks/useFetch';
+
+import Snackbar from '@material-ui/core/Snackbar';
+import Slide, { SlideProps } from '@material-ui/core/Slide';
+
+import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
+
 const useStyles = makeStyles((theme) => ({
   mainContent: {
     display: 'flex',
     flexDirection: 'column',
     height: '90vh',
-  },
-  collectionContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-  },
-  halfBox: {
-    width: '40%',
-    height: '80vh',
-    border: '1px solid red',
-    justifyContent: 'spaceBetween',
   },
   list: {
     width: '100%',
@@ -38,19 +43,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-import { useFetch } from '../components/customHooks/useFetch';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import { FixedSizeList } from 'react-window';
-import { Checkbox, Chip, List } from '@material-ui/core';
-import { motion } from 'framer-motion';
-import Layout from '../components/Layout';
-import Typography from '@material-ui/core/Typography';
-import { Logo } from '../components/icons/Logo';
-import FuzzySearch from 'fuzzy-search';
-
 function isEmpty(str: string) {
   return !str || str.length === 0;
+}
+function SlideTransition(props: any) {
+  return <Slide {...props} direction="left" />;
 }
 
 const getChunksfromName = (objects: null | { name: string; description: string; chunks: string[] }[], name: string) => {
@@ -62,7 +59,7 @@ const getChunksfromName = (objects: null | { name: string; description: string; 
     );
   }
   if (!objects) {
-    console.log('No Collection available yet!');
+    //console.log('No Collection available yet!');
     return (
       <Typography variant="h5" component="h2">
         No Collection available yet!
@@ -72,13 +69,14 @@ const getChunksfromName = (objects: null | { name: string; description: string; 
   const chosenItemObject = objects.find((object) => object.name === name);
   const chunks = chosenItemObject?.chunks;
 
-  return chunks?.map((chunk: string) => (
+  const styledChunks = chunks?.map((chunk: string) => (
     <motion.div key={chunk} style={{ display: 'inline-block' }} animate={{ scale: 1 }} initial={{ scale: 0.5 }}>
       <Box p={1}>
         <Chip label={chunk} variant="outlined" data-chunk-name={chunk} />
       </Box>
     </motion.div>
   ));
+  return styledChunks;
 };
 
 const getDescriptionFromName = (objects: any[] | null, name: string) => {
@@ -90,26 +88,53 @@ const getDescriptionFromName = (objects: any[] | null, name: string) => {
   return description;
 };
 
+const getChunks = (objects: any[] | null, name: string) => {
+  if (!objects || isEmpty(name)) {
+    return [];
+  }
+  const chosenItemObject = objects.find((object) => object.name === name);
+  const chunks = chosenItemObject?.chunks;
+  console.log('Chunks', chunks);
+  return chunks;
+};
+
 function Dashboard() {
+  console.log('------------------Dashborad renders--------------------------');
   const classes = useStyles();
   const { data: dataReceived, loading: dataLoading } = useFetch('api/collection/list');
 
   const [chosenItem, setChosenItem] = useState({ name: '' });
 
   const chooseCollection = (name: string) => {
-    setChosenItem({ name: name });
+    if (name != chosenItem.name) {
+      setChosenItem({ name: name });
+    }
   };
 
   const previewChips = getChunksfromName(dataReceived, chosenItem.name);
   const description = getDescriptionFromName(dataReceived, chosenItem.name);
+  const selectedChunks = getChunks(dataReceived, chosenItem.name);
+  console.log('after getChunks called', selectedChunks);
   // FUZZY SEARCH
   const fuzSearch = useMemo(() => {
     return new FuzzySearch(dataReceived as any, ['name']);
   }, [dataReceived]);
 
   const [keyword, setKeyword] = useState('');
-  const filteredCollection = keyword ? fuzSearch.search(keyword) : dataReceived;
-  console.log(filteredCollection);
+  // const filteredCollection = keyword ? fuzSearch.search(keyword) : dataReceived;
+  // console.log(filteredCollection);
+  const filteredCollection = useMemo(
+    () => (keyword ? fuzSearch.search(keyword) : dataReceived),
+    [fuzSearch, keyword, dataReceived]
+  );
+  // Saving to clipboard
+  const [shouldShowSnackbar, setSnackbarVisibility] = useState(false);
+  const hideSnackbar = useCallback(() => setSnackbarVisibility(false), []);
+  const handleCopy = useCallback(() => {
+    console.log('handleCopy is called');
+    //eslint-disable-next-line
+    navigator.clipboard?.writeText([...selectedChunks].join()).then(() => setSnackbarVisibility(true));
+  }, [selectedChunks]);
 
   return (
     <Box>
@@ -136,7 +161,8 @@ function Dashboard() {
                   }}
                 />
               </Box>
-              <Box display="flex" flexDirection="row" justifyContent="space-between" flexGrow={1}>
+              {/*Box which contains the List of collection and preview boxes */}
+              <Box display="flex" flexDirection="row" justifyContent="space-between">
                 <Box
                   width="35%"
                   //border="1px solid white"
@@ -166,33 +192,52 @@ function Dashboard() {
                 </Box>
                 <Box
                   overflow="auto"
-                  width="60%"
+                  flexGrow={1}
+                  minHeight="40vh"
                   borderRadius="borderRadius"
                   border="1px solid white"
                   color="primary.main"
                   m={1}
                 >
+                  {/*Showing the name and description on chunk Collection */}
                   <Box className={classes.card}>
                     <Box display="flex" flexDirection="row">
-                      <Box p={1} m={1} width={2 / 5}>
+                      <Box p={1} m={1} width={2 / 6}>
                         <Typography color="textSecondary">Collection Title</Typography>
                         <Typography variant="h5" component="h2">
                           {chosenItem.name}
                         </Typography>
                       </Box>
-                      <Box p={1} m={1} width={3 / 5}>
+                      <Box p={1} m={1} width={3 / 6}>
                         <Typography color="textSecondary">Description</Typography>
                         <Typography variant="body2" component="p">
                           {description}
                         </Typography>
                       </Box>
+                      <Box p={1} m={1} width={1 / 6} display="flex" justifyContent="flex-end">
+                        <IconButton onClick={handleCopy} disabled={!selectedChunks.length} aria-label="copy">
+                          <FileCopyOutlinedIcon />
+                        </IconButton>
+                      </Box>
                     </Box>
                   </Box>
+                  {/*Showing chunks in chosen collection */}
                   <Box borderRadius="borderRadius" borderColor="primary.main" p={1} overflow="auto">
                     {previewChips}
                   </Box>
                 </Box>
               </Box>
+              <Snackbar
+                open={shouldShowSnackbar}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                autoHideDuration={2000}
+                onClose={hideSnackbar}
+                TransitionComponent={SlideTransition}
+                message={`${selectedChunks.length} chunks copied`}
+              />
             </Box>
           )}
         </Box>
