@@ -242,9 +242,11 @@ const ChunksPicker = ({ entryFile, className }) => {
 
   // TILL HERE
   const [shouldShowSnackbar, setSnackbarVisibility] = useState(false);
+  const snackBarMessage = useRef('');
   const hideSnackbar = useCallback(() => setSnackbarVisibility(false), []);
   const handleCopy = useCallback(() => {
     //eslint-disable-next-line
+    snackBarMessage.current = `${selectedChunks.size} chunks copied`;
     navigator.clipboard?.writeText([...selectedChunks].join()).then(() => setSnackbarVisibility(true));
   }, [selectedChunks]);
 
@@ -322,8 +324,14 @@ const ChunksPicker = ({ entryFile, className }) => {
     };
     console.log(collectionData);
     fetch('/api/collection/add', requestOptions)
-      .then((response) => console.log(response))
-      .catch((err) => alert(err));
+      .then(() => {
+        snackBarMessage.current = `Collection saved !`;
+        setSnackbarVisibility(true);
+      })
+      .catch((err) => {
+        snackBarMessage.current = `Unable to save the collection !`;
+        setSnackbarVisibility(true);
+      });
 
     //console.log('Save Button Clicked');
   };
@@ -491,7 +499,7 @@ const ChunksPicker = ({ entryFile, className }) => {
         autoHideDuration={2000}
         onClose={hideSnackbar}
         TransitionComponent={SlideTransition}
-        message={`${selectedChunks.size} chunks copied`}
+        message={snackBarMessage.current}
       />
     </Box>
   ) : (
