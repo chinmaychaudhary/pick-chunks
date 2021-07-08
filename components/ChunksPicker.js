@@ -86,11 +86,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     fetch('/api/chunks', requestOptions)
       .then((response) => response.json())
       .then((data) => {
-        const chunkWithName = data.chunks.map((item) => {
-          return {
-            filepath: item,
-          };
-        });
+        const chunkWithName = data.chunks;
         setChildrenChunks(chunkWithName);
         console.log('FETCH CALLED:', chunkWithName);
       })
