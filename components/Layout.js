@@ -5,11 +5,18 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import AddCollectionIcon from '@material-ui/icons/NoteAddOutlined';
 import DashboardIcon from '@material-ui/icons/FolderOpenOutlined';
+import InfoIcon from '@material-ui/icons/InfoOutlined';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import PageIcon from '@material-ui/icons/ChevronRightOutlined';
+import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 import { useState } from 'react';
 import { Logo } from './icons/Logo';
 import { useRouter } from 'next/router';
+import { useFetch } from './customHooks/useFetch';
 
 const useStyles = makeStyles((theme) => ({
   drawer: {
@@ -32,6 +39,13 @@ const useStyles = makeStyles((theme) => ({
     width: 30,
     marginRight: theme.spacing(2),
   },
+  bottomTab: {
+    position: 'absolute',
+    bottom: 0,
+  },
+  tabs: {
+    height: '100%',
+  },
 }));
 
 const routesToName = {
@@ -43,12 +57,23 @@ const Layout = ({ children }) => {
   const classes = useStyles();
   const router = useRouter();
   const [selectedlink, setSelectedLink] = useState(router.pathname);
+  const [isDialog, setIsDialog] = useState(false);
+  const { data: version, loading: isVersionLoading } = useFetch('/version');
+
   const handleLinkSelect = (e, value) => {
-    if (value !== selectedlink) {
-      router.push(value);
+    if (Object.keys(routesToName).includes(value)) {
+      if (value !== selectedlink) {
+        router.push(value);
+      }
+      return;
+    }
+
+    if (value === '/about') {
+      setIsDialog(true);
     }
   };
 
+  console.log(version);
   return (
     <Box display="flex" flexDirection="row">
       <div className={classes.drawer}>
@@ -58,10 +83,16 @@ const Layout = ({ children }) => {
           orientation="vertical"
           indicatorColor="primary"
           textColor="primary"
-          aria-label="icon tabs example"
+          className={classes.tabs}
         >
           <Tab value="/" classes={{ root: classes.tab }} icon={<AddCollectionIcon fontSize="large" />} />
           <Tab value="/dashboard" classes={{ root: classes.tab }} icon={<DashboardIcon fontSize="large" />} />
+          <Tab
+            value="/about"
+            className={classes.bottomTab}
+            classes={{ root: classes.tab }}
+            icon={<InfoIcon fontSize="large" />}
+          />
         </Tabs>
       </div>
       <div className={classes.page}>
@@ -85,6 +116,23 @@ const Layout = ({ children }) => {
         </Box>
         <div>{children}</div>
       </div>
+      <Dialog
+        fullWidth={true}
+        open={isDialog}
+        onClose={() => {
+          setIsDialog(false);
+        }}
+      >
+        <DialogTitle>Pick Chunks</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Version: {isVersionLoading ? '...' : version.version}</DialogContentText>
+          <DialogContentText>
+            <Link href="https://github.com/chicho17/pick-chunks" target="_blank">
+              Github Respository
+            </Link>
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

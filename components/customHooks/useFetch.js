@@ -18,7 +18,6 @@ export const useFetch = (url) => {
     };
     fetchData();
     return () => {
-      // when component unmounts
       isCurrent.current = false;
     };
   }, [url]);

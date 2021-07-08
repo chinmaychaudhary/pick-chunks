@@ -24,24 +24,27 @@ const importConfig = (configPath) => {
 };
 
 const run = async () => {
-  argParser.option('-r, --root <root>', 'path to source directory of project', './');
+  argParser.option('-r, --root <root>', 'path to source directory of project');
   argParser.option('-c, --config <config>', 'path to configuration', DEFAULT_CONFIG_PATH);
-  argParser.option(
-    '-p, --port <port>',
-    'port to run interface on',
-    (value, def) => {
-      const port = parseInt(value);
-      if (isNaN(port) || port < 1000) {
-        return def;
-      }
-      return port;
-    },
-    3000
-  );
+  argParser.option('-p, --port <port>', 'port to run interface on', (value) => {
+    const port = parseInt(value);
+    if (isNaN(port) || port < 1000) {
+      return undefined;
+    }
+    return port;
+  });
 
   argParser.parse();
 
   const args = argParser.opts();
+
+  // Remove undefined arguments
+  Object.keys(args).forEach((arg) => {
+    if (args[arg] === undefined) {
+      delete args[arg];
+    }
+  });
+
   const options = {
     ...importConfig(args.config),
     ...args,
@@ -49,6 +52,10 @@ const run = async () => {
 
   if (options.root === undefined) {
     options.root = './';
+  }
+
+  if (options.port === undefined) {
+    options.port = 3000;
   }
 
   const resolvedRoot = resolve(process.cwd(), options.root);
@@ -66,6 +73,9 @@ const run = async () => {
   });
 
   server.all('*', (req, res) => {
+    if (req.path === '/version') {
+      return res.send(require('./package.json').version);
+    }
     return handle(req, res);
   });
 
