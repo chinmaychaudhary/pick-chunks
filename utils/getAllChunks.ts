@@ -50,9 +50,9 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
           const chunkNameComment = comments[0].value.replace("'", '"');
           if (chunkNameComment.includes('webpackChunkName')) {
             dynamicImportsChunkNames[filePath] = chunkNameComment.split('"')[1];
+            dynamicImports.add(filePath);
           }
         }
-        dynamicImports.add(filePath);
       }
     },
     ExportNamedDeclaration(path: any) {
@@ -106,13 +106,22 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
         staticImportPath += extension;
       }
 
-      const pathToStaticImport = resolve(cwd, staticImportPath);
-      if (!existsSync(pathToStaticImport)) {
+      const pathToImport = resolve(cwd, staticImportPath);
+      const pathToImportWithRoot = resolve(root, staticImportPath);
+
+      const isRelative = existsSync(pathToImport);
+      const isFromRoot = existsSync(pathToImportWithRoot);
+
+      if (!isRelative && !isFromRoot) {
         staticImportPath = staticImport;
         continue;
       }
 
-      children.push(getAllChunks(pathToStaticImport, root));
+      if (isRelative) {
+        children.push(getAllChunks(pathToImport, root));
+      } else if (isFromRoot) {
+        children.push(getAllChunks(pathToImportWithRoot, root));
+      }
     }
   }
 
