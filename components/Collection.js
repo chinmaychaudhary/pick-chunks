@@ -53,17 +53,11 @@ function SlideTransition(props) {
 const getChunksfromName = (objects, name) => {
   if (isEmpty(name)) {
     return (
-      <Typography variant="h5" component="h2">
-        Choose a Collection!
-      </Typography>
-    );
-  }
-  if (!objects) {
-    //console.log('No Collection available yet!');
-    return (
-      <Typography variant="h5" component="h2">
-        No Collection available yet!
-      </Typography>
+      <Box display="flex" justifyContent="center">
+        <Typography variant="h5" component="h2">
+          Choose a Collection!
+        </Typography>
+      </Box>
     );
   }
   const chosenItemObject = objects.find((object) => object.name === name);
@@ -80,7 +74,7 @@ const getChunksfromName = (objects, name) => {
 };
 
 const getDescriptionFromName = (objects, name) => {
-  if (isEmpty(name) || !objects) {
+  if (isEmpty(name)) {
     return '';
   }
   const chosenItemObject = objects.find((object) => object.name === name);
@@ -89,7 +83,7 @@ const getDescriptionFromName = (objects, name) => {
 };
 
 const getChunks = (objects, name) => {
-  if (!objects || isEmpty(name)) {
+  if (isEmpty(name)) {
     return [];
   }
   const chosenItemObject = objects.find((object) => object.name === name);
@@ -98,10 +92,15 @@ const getChunks = (objects, name) => {
   return chunks;
 };
 
-const Collection = ({ dataReceived, dataLoading }) => {
+// dataReceived has objects of following type
+//{ name: string,
+//  description: string,
+//} chunks: string []
+
+const Collection = ({ dataReceived }) => {
   const classes = useStyles();
 
-  const [chosenItem, setChosenItem] = useState({ name: '' });
+  const [chosenItem, setChosenItem] = useState({ name: dataReceived[0].name });
 
   const chooseCollection = (name) => {
     if (name != chosenItem.name) {
@@ -136,7 +135,13 @@ const Collection = ({ dataReceived, dataLoading }) => {
 
   return (
     <Box className={classes.mainContent} p={5}>
-      {dataLoading ? null : (
+      {!dataReceived.length ? (
+        <Box display="flex" justifyContent="center">
+          <Typography variant="h5" component="h2">
+            Oops ! No Collection Here ...
+          </Typography>
+        </Box>
+      ) : (
         <Box
           display="flex"
           flexDirection="column"
