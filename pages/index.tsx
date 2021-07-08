@@ -71,12 +71,12 @@ const relativePath = (path: string, directory: string | any[]) => {
 
 function Add() {
   const classes = useStyles();
-
+  // filepath: absolute path // name: relative path
   const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
   const [allFiles, setAllFiles] = useState([] as any);
 
   const { data: dataReceived, loading: dataLoading } = useFetch('/api/files');
-
+  console.log('dataReceived,:', dataReceived);
   useEffect(() => {
     if (dataReceived != null) {
       var files: { filepath: any; name: string }[] = [];
