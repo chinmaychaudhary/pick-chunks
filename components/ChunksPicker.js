@@ -22,6 +22,7 @@ import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
 import HideIcon from '@material-ui/icons/ExpandLessOutlined';
 import Grid from '@material-ui/core/Grid';
+import { HomeOutlined } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
@@ -350,14 +351,22 @@ const ChunksPicker = ({ entryFile, className }) => {
                 onClick={handleCrumbClick}
                 data-index={index}
               >
-                <Typography variant="subtitle1" color="secondary">
-                  {chunkName}
-                </Typography>
+                {chunkName !== entryFile?.name ? (
+                  <Typography variant="subtitle1" color="secondary">
+                    {chunkName}
+                  </Typography>
+                ) : (
+                  <HomeOutlined />
+                )}
               </Link>
             ))}
             {/*The latest breadcrumb [Accessories] */}
             <Typography variant="subtitle1" color="textPrimary">
-              {crumbs[crumbs.length - 1].chunkName}
+              {crumbs[crumbs.length - 1].chunkName !== entryFile?.name ? (
+                <Typography variant="subtitle1">{crumbs[crumbs.length - 1].chunkName}</Typography>
+              ) : (
+                <HomeOutlined />
+              )}
             </Typography>
           </Breadcrumbs>
           {/* 2. Search Chunks and copy delete options */}
