@@ -30,6 +30,7 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
   const cwd = dirname(path);
   const staticImports: string[] = [];
   const dynamicImports = new Set();
+  const dynamicImportsChunkNames: any = {};
 
   const code = readFileSync(path).toString();
   const ast = parser.parse(code, {
@@ -43,7 +44,15 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
     },
     CallExpression(path: any) {
       if (path.node.callee.type === 'Import') {
-        dynamicImports.add(path.node.arguments[0].value);
+        const comments = path.node.arguments[0].leadingComments;
+        const filePath = path.node.arguments[0].value;
+        if (comments && comments.length == 1) {
+          const chunkNameComment = comments[0].value.replace("'", '"');
+          if (chunkNameComment.includes('webpackChunkName')) {
+            dynamicImportsChunkNames[filePath] = chunkNameComment.split('"')[1];
+          }
+        }
+        dynamicImports.add(filePath);
       }
     },
     ExportNamedDeclaration(path: any) {
@@ -58,7 +67,7 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
     },
   });
 
-  const chunks = new Set();
+  const chunks = new Map();
   dynamicImports.forEach((chunk) => {
     let chunkPath: any = chunk;
     for (const extension of extensions) {
@@ -72,10 +81,10 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
         continue;
       }
 
-      const relativePath = relative(root, pathToChunk);
-      chunks.add(relativePath);
+      chunks.set(pathToChunk, dynamicImportsChunkNames[chunk as string]);
     }
   });
+
   dynamicImports.clear();
 
   const children: any = [];
@@ -100,13 +109,15 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
 
   return new Promise((resolve) => {
     Promise.all(children).then((childChunks) => {
-      const allChunks: any = childChunks.reduce((all: any, curr: any) => {
-        return [...all, ...curr.chunks];
-      }, chunks);
-
+      const allChunks: any = childChunks.reduce(
+        (all: any, curr: any) => {
+          return [...all, ...curr.chunks];
+        },
+        [...chunks]
+      );
       store[path] = {
         path,
-        chunks: new Set(allChunks),
+        chunks: new Map(allChunks),
         children: childChunks,
       };
 
