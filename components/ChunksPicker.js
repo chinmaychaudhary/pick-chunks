@@ -23,6 +23,12 @@ import SaveIcon from '@material-ui/icons/Save';
 import HideIcon from '@material-ui/icons/ExpandLessOutlined';
 import Grid from '@material-ui/core/Grid';
 import { HomeOutlined } from '@material-ui/icons';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import { Button } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
@@ -111,6 +117,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [processing, setProcessing] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [selectedChunks, setSelectedChunks] = useState(new Set());
+  const [isDialog, setIsDialog] = useState(false);
 
   const fuzSearch = useMemo(() => {
     return new FuzzySearch(childrenChunks, ['chunkName']);
@@ -296,7 +303,6 @@ const ChunksPicker = ({ entryFile, className }) => {
   // Error here : react hooks has unnecessary dependencies
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const windowData = useMemo(() => ({}), [selectedChunks, processing, filteredChunks]);
-  const [showSaveForm, setShowSaveForm] = useState(false);
 
   // HANDLE SAVE COLLECTION STARTS FROM HERE
   const handleSaveCollection = (e) => {
@@ -316,6 +322,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       .then(() => {
         snackBarMessage.current = `Collection saved !`;
         setSnackbarVisibility(true);
+        setIsDialog(false);
       })
       .catch((err) => {
         snackBarMessage.current = `Unable to save the collection !`;
@@ -402,11 +409,11 @@ const ChunksPicker = ({ entryFile, className }) => {
               <IconButton
                 disabled={!selectedChunks.size}
                 onClick={() => {
-                  setShowSaveForm(!showSaveForm);
+                  setIsDialog(true);
                 }}
                 aria-label="save collection"
               >
-                {!showSaveForm ? <SaveIcon /> : <HideIcon />}
+                <SaveIcon />
               </IconButton>
             </Box>
           </Box>
@@ -471,40 +478,6 @@ const ChunksPicker = ({ entryFile, className }) => {
                 top="0"
                 overflow="auto"
               >
-                <Box display={selectedChunks.size && showSaveForm ? 'block' : 'none'}>
-                  <Grid container spacing={1}>
-                    <Grid item xs={4}>
-                      <TextField
-                        label="Name"
-                        error={emptyNameError}
-                        value={collectionName}
-                        onChange={(e) => setCollectionName(e.target.value)}
-                        variant="outlined"
-                        fullWidth={true}
-                        required
-                      />
-                    </Grid>
-                    <Grid item xs>
-                      <TextField
-                        label="Description"
-                        variant="outlined"
-                        fullWidth={true}
-                        value={collectionDescription}
-                        onChange={(e) => setCollectionDescription(e.target.value)}
-                      />
-                    </Grid>
-                    <Grid item xs={1}>
-                      <IconButton
-                        disabled={!selectedChunks.size}
-                        onClick={handleSaveCollection}
-                        aria-label="save collection"
-                        color="primary"
-                      >
-                        <SaveIcon />
-                      </IconButton>
-                    </Grid>
-                  </Grid>
-                </Box>
                 {[...selectedChunks].map((chunk) => (
                   <motion.div
                     key={chunk}
@@ -539,6 +512,40 @@ const ChunksPicker = ({ entryFile, className }) => {
         TransitionComponent={SlideTransition}
         message={snackBarMessage.current}
       />
+      <Dialog
+        fullWidth={true}
+        open={isDialog}
+        onClose={() => {
+          setIsDialog(false);
+        }}
+      >
+        <DialogTitle>Save Collection</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Name"
+            error={emptyNameError}
+            value={collectionName}
+            onChange={(e) => setCollectionName(e.target.value)}
+            variant="outlined"
+            fullWidth={true}
+            required
+            margin="normal"
+          />
+          <TextField
+            label="Description"
+            variant="outlined"
+            fullWidth={true}
+            value={collectionDescription}
+            onChange={(e) => setCollectionDescription(e.target.value)}
+            margin="normal"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSaveCollection} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   ) : (
     <></>
