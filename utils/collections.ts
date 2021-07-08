@@ -122,6 +122,10 @@ const addCollection = (configPath: string, collection: { name: string; descripti
 };
 
 const getCollections = (configPath: string) => {
+  if (!existsSync(configPath)) {
+    return [];
+  }
+
   const sourceCode = readFileSync(configPath).toString();
   const ast = parser.parse(sourceCode, {
     sourceType: 'module',
