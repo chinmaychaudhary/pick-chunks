@@ -55,9 +55,24 @@ const ChunksPicker = ({ entryFile, className }) => {
   // YET TO IMPLEMENT, used to find all the descendents of a chunk,
   // used in handleEntireSubGraphSelect
   const loadAllDescendantChunks = useCallback(
-    () =>
+    (filepath) =>
       new Promise((resolve, reject) => {
-        reject('yet to implement');
+        // call fetch with pathname and return all the chunks
+        console.log('filepath:', filepath);
+        fetch('api/chunks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: filepath }),
+        })
+          .then((res) => {
+            return res.json();
+          })
+          .then((res) => {
+            console.log(res.chunks);
+            resolve(res.chunks);
+          })
+          .catch((err) => reject(err));
+        // reject('yet to implement');
       }),
     []
   );
@@ -82,13 +97,13 @@ const ChunksPicker = ({ entryFile, className }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path: path }),
     };
-    console.log('FETCH CALLED WITH PATH:', path);
+    //console.log('FETCH CALLED WITH PATH:', path);
     fetch('/api/chunks', requestOptions)
       .then((response) => response.json())
       .then((data) => {
         const chunkWithName = data.chunks;
         setChildrenChunks(chunkWithName);
-        console.log('FETCH CALLED:', chunkWithName);
+        //console.log('FETCH CALLED:', chunkWithName);
       })
       .catch((err) => alert(err));
   }, [crumbs]);
@@ -141,7 +156,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       const nextChunks = new Set([...selectedChunksRef.current]);
       setProcessing(true);
       loadAllDescendantChunks(filepath).then((descChunks) => {
-        [...descChunks, { chunkName }].forEach(({ chunkName: cName }) => {
+        [...descChunks, chunkName].forEach((cName) => {
           nextChunks.add(cName);
         });
         setSelectedChunks(nextChunks);
@@ -164,7 +179,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       const nextChunks = new Set([...selectedChunksRef.current]);
       setProcessing(true);
       loadAllDescendantChunks(filepath).then((descChunks) => {
-        [...descChunks, { chunkName }].forEach(({ chunkName: cName }) => {
+        [...descChunks, chunkName].forEach((cName) => {
           nextChunks.delete(cName);
         });
         setSelectedChunks(nextChunks);
@@ -177,8 +192,8 @@ const ChunksPicker = ({ entryFile, className }) => {
   const handleItemKeyDown = useCallback(
     (e) => {
       const { filepath, chunkName, checked } = e.currentTarget.dataset;
+      // chunksName and filepath are equal to filepath only
       const isActive = checked === '1';
-
       switch (e.key) {
         case 's':
           return isActive ? undefined : handleSingleChunkSelect(chunkName);
@@ -216,9 +231,11 @@ const ChunksPicker = ({ entryFile, className }) => {
 
   // TILL HERE
   const [shouldShowSnackbar, setSnackbarVisibility] = useState(false);
+  const snackBarMessage = useRef('');
   const hideSnackbar = useCallback(() => setSnackbarVisibility(false), []);
   const handleCopy = useCallback(() => {
     //eslint-disable-next-line
+    snackBarMessage.current = `${selectedChunks.size} chunks copied`;
     navigator.clipboard?.writeText([...selectedChunks].join()).then(() => setSnackbarVisibility(true));
   }, [selectedChunks]);
 
@@ -295,10 +312,16 @@ const ChunksPicker = ({ entryFile, className }) => {
     };
     console.log(collectionData);
     fetch('/api/collection/add', requestOptions)
-      .then((response) => console.log(response))
-      .catch((err) => alert(err));
+      .then(() => {
+        snackBarMessage.current = `Collection saved !`;
+        setSnackbarVisibility(true);
+      })
+      .catch((err) => {
+        snackBarMessage.current = `Unable to save the collection !`;
+        setSnackbarVisibility(true);
+      });
 
-    console.log('Save Button Clicked');
+    //console.log('Save Button Clicked');
   };
 
   const [collectionName, setCollectionName] = useState('Name');
@@ -464,7 +487,7 @@ const ChunksPicker = ({ entryFile, className }) => {
         autoHideDuration={2000}
         onClose={hideSnackbar}
         TransitionComponent={SlideTransition}
-        message={`${selectedChunks.size} chunks copied`}
+        message={snackBarMessage.current}
       />
     </Box>
   ) : (
