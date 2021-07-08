@@ -44,6 +44,7 @@ const useStyles = makeStyles((theme) => ({
 
 export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFiles }) {
   console.log('entryfile started to render');
+  console.log('data passed to EntryFilePicker is', entryFile, onEntryFileChange, allFiles);
   const classes = useStyles();
   const [searchKeyword, setSearchKeyword] = useState(entryFile?.filepath || '');
   const data = allFiles;
