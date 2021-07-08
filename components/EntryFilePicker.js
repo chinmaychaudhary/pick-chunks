@@ -43,8 +43,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFiles }) {
-  console.log('entryfile started to render');
-  console.log('data passed to EntryFilePicker is', entryFile, onEntryFileChange, allFiles);
+  //console.log('entryfile started to render');
+  //console.log('data passed to EntryFilePicker is', entryFile, onEntryFileChange, allFiles);
   const classes = useStyles();
   const [searchKeyword, setSearchKeyword] = useState(entryFile?.filepath || '');
   const data = allFiles;
@@ -60,7 +60,7 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFi
         value={entryFile}
         options={data || EMPTY_ARRAY}
         onChange={(event, newValue) => {
-          console.log(newValue);
+          //console.log(newValue);
           onEntryFileChange(newValue);
         }}
         open={open}
