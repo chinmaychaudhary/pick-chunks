@@ -99,8 +99,11 @@ const getChunks = (objects, name) => {
 
 const Collection = ({ dataReceived }) => {
   const classes = useStyles();
-
-  const [chosenItem, setChosenItem] = useState({ name: dataReceived[0].name });
+  var defaultStateName = '';
+  if (dataReceived.length > 0) {
+    defaultStateName = dataReceived[0].name;
+  }
+  const [chosenItem, setChosenItem] = useState({ name: defaultStateName });
 
   const chooseCollection = (name) => {
     if (name != chosenItem.name) {
