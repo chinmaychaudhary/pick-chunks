@@ -326,6 +326,10 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [collectionName, setCollectionName] = useState('');
   const [emptyNameError, setEmptyNameError] = useState(false);
   const [collectionDescription, setCollectionDescription] = useState('');
+  const [isChildrenChunks, setIsChildrenChunks] = useState(false);
+  useEffect(() => {
+    setIsChildrenChunks(childrenChunks != null && childrenChunks.length > 0);
+  }, [childrenChunks]);
 
   return !!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size ? (
     <Box mt={2} className={className} display="flex" flexDirection="column">
@@ -375,8 +379,12 @@ const ChunksPicker = ({ entryFile, className }) => {
             <TextField
               variant="outlined"
               flex="0 0 auto"
-              style={{ marginBottom: '20px', width: '35%' }}
+              style={{
+                marginBottom: '20px',
+                width: '35%',
+              }}
               label="Search Chunks"
+              disabled={!isChildrenChunks}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
@@ -413,19 +421,38 @@ const ChunksPicker = ({ entryFile, className }) => {
             width="100%"
             maxWidth="100%"
           >
-            <div className={classes.listRoot} style={{ height, width: width - selectionBoxWidth }}>
+            <div
+              className={classes.listRoot}
+              style={{
+                height,
+                width: width - selectionBoxWidth,
+              }}
+            >
               {/* FixedSizeList: creates a scrollable list of items;
               itemSize:{Height of item} height:{height of container} width:{width of container} itemCount:{total items}*/}
-              <FixedSizeList
-                height={height}
-                width={width - selectionBoxWidth}
-                itemSize={58}
-                itemCount={filteredChunks?.length || 0}
-                data={windowData}
-              >
-                {/*Containes styled individual ListItem */}
-                {ListItemContainer}
-              </FixedSizeList>
+              {isChildrenChunks ? (
+                <FixedSizeList
+                  height={height}
+                  width={width - selectionBoxWidth}
+                  itemSize={58}
+                  itemCount={filteredChunks?.length || 0}
+                  data={windowData}
+                >
+                  {/*Containes styled individual ListItem */}
+                  {ListItemContainer}
+                </FixedSizeList>
+              ) : (
+                <Box
+                  height="100%"
+                  width={width - selectionBoxWidth}
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  textAlign="center"
+                >
+                  <Typography>No Chunks found in {crumbs[crumbs.length - 1]?.chunkName} </Typography>
+                </Box>
+              )}
             </div>
             <Box ref={selectedContainerRef} flex="1">
               <Box
@@ -444,8 +471,8 @@ const ChunksPicker = ({ entryFile, className }) => {
                 top="0"
                 overflow="auto"
               >
-                <form style={{ display: showSaveForm ? 'block' : 'none' }}>
-                  <Grid container spacing={3}>
+                <Box display={selectedChunks.size && showSaveForm ? 'block' : 'none'}>
+                  <Grid container spacing={1}>
                     <Grid item xs={4}>
                       <TextField
                         label="Name"
@@ -477,7 +504,7 @@ const ChunksPicker = ({ entryFile, className }) => {
                       </IconButton>
                     </Grid>
                   </Grid>
-                </form>
+                </Box>
                 {[...selectedChunks].map((chunk) => (
                   <motion.div
                     key={chunk}
