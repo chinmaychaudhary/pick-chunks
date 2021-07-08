@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname, relative } from 'path';
 
 let store: Record<string, any> = {};
-const extensions = ['.js', '.ts', '.tsx'];
+const extensions = ['.js', '.ts', '.tsx', '/index.js', '/index.ts', 'index/tsx'];
 
 export const clearStore = () => {
   store = {};
@@ -46,13 +46,19 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
       if (path.node.callee.type === 'Import') {
         const comments = path.node.arguments[0].leadingComments;
         const filePath = path.node.arguments[0].value;
-        if (comments && comments.length == 1) {
-          const chunkNameComment = comments[0].value.replace("'", '"');
-          if (chunkNameComment.includes('webpackChunkName')) {
-            dynamicImportsChunkNames[filePath] = chunkNameComment.split('"')[1];
-            dynamicImports.add(filePath);
+        if (comments) {
+          for (const comment of comments) {
+            const chunkNameComment = comment.value.replace("'", '"');
+            if (chunkNameComment.includes('webpackChunkName')) {
+              dynamicImportsChunkNames[filePath] = chunkNameComment.split('"')[1];
+              dynamicImports.add(filePath);
+              return;
+            }
           }
         }
+
+        dynamicImportsChunkNames[filePath] = relative(root, filePath);
+        dynamicImports.add(filePath);
       }
     },
     ExportNamedDeclaration(path: any) {
