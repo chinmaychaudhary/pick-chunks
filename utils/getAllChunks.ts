@@ -76,12 +76,21 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
       }
 
       const pathToChunk = resolve(cwd, chunkPath);
-      if (!existsSync(pathToChunk)) {
+      const pathToChunkWithRoot = resolve(root, chunkPath);
+
+      const isRelative = existsSync(pathToChunk);
+      const isFromRoot = existsSync(pathToChunkWithRoot);
+
+      if (!isRelative && !isFromRoot) {
         chunkPath = chunk;
         continue;
       }
 
-      chunks.set(pathToChunk, dynamicImportsChunkNames[chunk as string]);
+      if (isRelative) {
+        chunks.set(pathToChunk, dynamicImportsChunkNames[chunk as string]);
+      } else if (isFromRoot) {
+        chunks.set(pathToChunkWithRoot, dynamicImportsChunkNames[chunk as string]);
+      }
     }
   });
 
