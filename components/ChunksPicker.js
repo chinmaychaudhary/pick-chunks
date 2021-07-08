@@ -52,13 +52,10 @@ function SlideTransition(props) {
 
 const ChunksPicker = ({ entryFile, className }) => {
   const classes = useStyles();
-  // YET TO IMPLEMENT, used to find all the descendents of a chunk,
-  // used in handleEntireSubGraphSelect
+
   const loadAllDescendantChunks = useCallback(
     (filepath) =>
       new Promise((resolve, reject) => {
-        // call fetch with pathname and return all the chunks
-        console.log('filepath:', filepath);
         fetch('api/chunks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -68,8 +65,9 @@ const ChunksPicker = ({ entryFile, className }) => {
             return res.json();
           })
           .then((res) => {
-            console.log(res.chunks);
-            resolve(res.chunks);
+            const chunks = res.chunks;
+            const chunkNames = chunks.map((chunk) => chunk.chunkName);
+            resolve(chunkNames);
           })
           .catch((err) => reject(err));
         // reject('yet to implement');
@@ -77,17 +75,19 @@ const ChunksPicker = ({ entryFile, className }) => {
     []
   );
 
-  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.name }]);
+  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.name, chunkName: entryFile?.name }]);
   useEffect(() => {
-    setCrumbs([{ filepath: entryFile?.name }]);
+    setCrumbs([{ filepath: entryFile?.name, chunkName: entryFile?.name }]);
     setKeyword('');
   }, [entryFile]);
+
   const handleCrumbClick = useCallback((e) => {
     e.preventDefault();
     const index = +e.currentTarget.dataset.index;
     setCrumbs((prevCrumbs) => [...prevCrumbs.slice(0, index + 1)]);
   }, []);
 
+  // childrenChunks contains [{filepath: string, chunksName: string}]
   const [childrenChunks, setChildrenChunks] = useState(null);
   useEffect(() => {
     const path = crumbs[crumbs.length - 1].filepath;
@@ -97,13 +97,11 @@ const ChunksPicker = ({ entryFile, className }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path: path }),
     };
-    //console.log('FETCH CALLED WITH PATH:', path);
     fetch('/api/chunks', requestOptions)
       .then((response) => response.json())
       .then((data) => {
         const chunkWithName = data.chunks;
         setChildrenChunks(chunkWithName);
-        //console.log('FETCH CALLED:', chunkWithName);
       })
       .catch((err) => alert(err));
   }, [crumbs]);
@@ -113,13 +111,13 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [selectedChunks, setSelectedChunks] = useState(new Set());
 
   const fuzSearch = useMemo(() => {
-    return new FuzzySearch(childrenChunks, ['filepath']);
+    return new FuzzySearch(childrenChunks, ['chunkName']);
   }, [childrenChunks]);
   const filteredChunks = useMemo(
     () => (keyword ? fuzSearch.search(keyword) : childrenChunks),
     [fuzSearch, keyword, childrenChunks]
   );
-
+  console.log('filteredChunks,', filteredChunks);
   const fcRef = useRef(filteredChunks);
   const selectedChunksRef = useRef(selectedChunks);
   const processingRef = useRef(processing);
@@ -129,8 +127,9 @@ const ChunksPicker = ({ entryFile, className }) => {
 
   const handleChunkEnter = useCallback((e) => {
     // e.currentTarget.dataset is used for list items
-    const { filepath } = e.currentTarget.dataset;
-    setCrumbs((prevCrumbs) => prevCrumbs.concat({ filepath }));
+    console.log('HandleChunksEnter called', e.currentTarget.dataset);
+    const { filepath, chunkName } = e.currentTarget.dataset;
+    setCrumbs((prevCrumbs) => prevCrumbs.concat({ filepath, chunkName }));
     setKeyword('');
   }, []);
 
@@ -144,15 +143,14 @@ const ChunksPicker = ({ entryFile, className }) => {
     });
   }, []);
 
-  // FROM HERE STILL REMAINING
   // selects the current chunk and appends to the chunks, its used when user uses keyboard input {s}
+
   const handleSingleChunkSelect = useCallback((chunkName) => {
     setSelectedChunks((prev) => new Set([...prev, chunkName]));
   }, []);
   // selects the subgraph , its used when user uses keyboard input {p}
   const handleEntireSubGraphSelect = useCallback(
     (chunkName, filepath) => {
-      //DID NOT UNDERSTAND HOW IS IT WORKING ? as it should load descendents but its taking all the current chunks
       const nextChunks = new Set([...selectedChunksRef.current]);
       setProcessing(true);
       loadAllDescendantChunks(filepath).then((descChunks) => {
@@ -229,7 +227,6 @@ const ChunksPicker = ({ entryFile, className }) => {
     setSelectedChunks(new Set());
   }, [setSelectedChunks]);
 
-  // TILL HERE
   const [shouldShowSnackbar, setSnackbarVisibility] = useState(false);
   const snackBarMessage = useRef('');
   const hideSnackbar = useCallback(() => setSnackbarVisibility(false), []);
@@ -250,20 +247,21 @@ const ChunksPicker = ({ entryFile, className }) => {
     if (!fcRef.current[index]) {
       return null;
     }
-    // HERE chunkName and filepath are extracted ,
-    // so we will now remove chunkName, as its not used in api
-    const { filepath } = fcRef.current[index];
+    // HERE chunkName and filepath are extracted
+    console.log('fcRef.current[index]', fcRef.current[index]);
+    const { filepath, chunkName } = fcRef.current[index];
     return (
       <motion.div
-        key={filepath}
+        key={chunkName}
         animate={{ y: style.top }}
         initial={{ y: style.top - 56 }}
         style={{ top: 0, position: 'absolute', width: '100%' }}
+        // layoutTransition={spring}
       >
         <ListItem
           button
-          data-checked={selectedChunksRef.current.has(filepath) ? '1' : '0'}
-          data-chunk-name={filepath}
+          data-checked={selectedChunksRef.current.has(chunkName) ? '1' : '0'}
+          data-chunk-name={chunkName}
           data-filepath={filepath}
           onClick={handleChunkEnterRef.current}
           disabled={processingRef.current}
@@ -274,15 +272,15 @@ const ChunksPicker = ({ entryFile, className }) => {
             tabIndex={-1}
             edge="start"
             inputProps={{
-              'aria-labelledby': filepath,
-              'data-checked': selectedChunksRef.current.has(filepath) ? '1' : '0',
-              'data-chunk-name': filepath,
+              'aria-labelledby': chunkName,
+              'data-checked': selectedChunksRef.current.has(chunkName) ? '1' : '0',
+              'data-chunk-name': chunkName,
               'data-filepath': filepath,
               onClick: handleCheckboxToggleRef.current,
             }}
-            checked={selectedChunksRef.current.has(filepath)}
+            checked={selectedChunksRef.current.has(chunkName)}
           />
-          <ListItemText primary={filepath} />
+          <ListItemText primary={chunkName} />
           <ChevronRightIcon edge="end" />
         </ListItem>
       </motion.div>
@@ -320,11 +318,9 @@ const ChunksPicker = ({ entryFile, className }) => {
         snackBarMessage.current = `Unable to save the collection !`;
         setSnackbarVisibility(true);
       });
-
-    //console.log('Save Button Clicked');
   };
 
-  const [collectionName, setCollectionName] = useState('Name');
+  const [collectionName, setCollectionName] = useState('');
   const [emptyNameError, setEmptyNameError] = useState(false);
   const [collectionDescription, setCollectionDescription] = useState('');
 
@@ -353,13 +349,13 @@ const ChunksPicker = ({ entryFile, className }) => {
                 data-index={index}
               >
                 <Typography variant="subtitle1" color="secondary">
-                  {filepath}
+                  {chunkName}
                 </Typography>
               </Link>
             ))}
             {/*The latest breadcrumb [Accessories] */}
             <Typography variant="subtitle1" color="textPrimary">
-              {crumbs[crumbs.length - 1].filepath}
+              {crumbs[crumbs.length - 1].chunkName}
             </Typography>
           </Breadcrumbs>
           {/* 2. Search Chunks and copy delete options */}

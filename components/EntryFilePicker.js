@@ -56,6 +56,7 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFi
         value={entryFile}
         options={data || EMPTY_ARRAY}
         onChange={(event, newValue) => {
+          console.log(newValue);
           onEntryFileChange(newValue);
         }}
         open={open}
