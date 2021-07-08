@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
+import { createFilterOptions } from '@material-ui/lab';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -47,6 +48,8 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFi
   const [searchKeyword, setSearchKeyword] = useState(entryFile?.filepath || '');
   const data = allFiles;
   const [open, setOpen] = React.useState(false);
+  const defaultFilterFiles = createFilterOptions();
+
   return (
     <Box className={className} display="flex" alignItems="flex-end" mb={2}>
       <Autocomplete
@@ -68,6 +71,9 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFi
         inputValue={searchKeyword}
         onInputChange={(event, newInputValue) => {
           setSearchKeyword(newInputValue);
+        }}
+        filterOptions={(options, state) => {
+          return defaultFilterFiles(options, state).slice(0, 20);
         }}
         getOptionLabel={(option) => option.name}
         getOptionSelected={(option, value) => option === value}
