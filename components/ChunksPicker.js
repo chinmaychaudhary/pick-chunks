@@ -20,6 +20,7 @@ import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
+import HideIcon from '@material-ui/icons/ExpandLessOutlined';
 import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles((theme) => ({
@@ -294,6 +295,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   // Error here : react hooks has unnecessary dependencies
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const windowData = useMemo(() => ({}), [selectedChunks, processing, filteredChunks]);
+  const [showSaveForm, setShowSaveForm] = useState(false);
 
   // HANDLE SAVE COLLECTION STARTS FROM HERE
   const handleSaveCollection = (e) => {
@@ -380,8 +382,14 @@ const ChunksPicker = ({ entryFile, className }) => {
               <IconButton disabled={!selectedChunks.size} onClick={handleDeselectAll} aria-label="deselect all">
                 <DeleteOutlineIcon />
               </IconButton>
-              <IconButton disabled={!selectedChunks.size} onClick={handleSaveCollection} aria-label="save collection">
-                <SaveIcon />
+              <IconButton
+                disabled={!selectedChunks.size}
+                onClick={() => {
+                  setShowSaveForm(!showSaveForm);
+                }}
+                aria-label="save collection"
+              >
+                {!showSaveForm ? <SaveIcon /> : <HideIcon />}
               </IconButton>
             </Box>
           </Box>
@@ -427,7 +435,7 @@ const ChunksPicker = ({ entryFile, className }) => {
                 top="0"
                 overflow="auto"
               >
-                <form>
+                <form style={{ display: showSaveForm ? 'block' : 'none' }}>
                   <Grid container spacing={3}>
                     <Grid item xs={4}>
                       <TextField
@@ -448,6 +456,16 @@ const ChunksPicker = ({ entryFile, className }) => {
                         value={collectionDescription}
                         onChange={(e) => setCollectionDescription(e.target.value)}
                       />
+                    </Grid>
+                    <Grid item xs={1}>
+                      <IconButton
+                        disabled={!selectedChunks.size}
+                        onClick={handleSaveCollection}
+                        aria-label="save collection"
+                        color="primary"
+                      >
+                        <SaveIcon />
+                      </IconButton>
                     </Grid>
                   </Grid>
                 </form>
