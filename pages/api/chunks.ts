@@ -20,8 +20,12 @@ export default async function handler(req: any, res: NextApiResponse<Data>) {
       },
       (_, value) => {
         // Stringify Set
-        if (typeof value === 'object' && value instanceof Set) {
-          return [...value];
+        if (typeof value === 'object' && value instanceof Map) {
+          const obj = [];
+          for (const [filepath, chunkName] of value) {
+            obj.push({ filepath, chunkName });
+          }
+          return obj;
         }
         return value;
       }

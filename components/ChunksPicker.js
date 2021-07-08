@@ -2,29 +2,22 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import FuzzySearch from 'fuzzy-search';
 import { FixedSizeList } from 'react-window';
 import { motion } from 'framer-motion';
-
 import useMeasure from 'react-use/lib/useMeasure';
-
 import { makeStyles } from '@material-ui/core/styles';
-
 import Link from '@material-ui/core/Link';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
-
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import IconButton from '@material-ui/core/IconButton';
-
 import Snackbar from '@material-ui/core/Snackbar';
 import Slide from '@material-ui/core/Slide';
-
 import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
-
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
 import Grid from '@material-ui/core/Grid';
@@ -108,11 +101,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     fetch('/api/chunks', requestOptions)
       .then((response) => response.json())
       .then((data) => {
-        const chunkWithName = data.chunks.map((item) => {
-          return {
-            filepath: item,
-          };
-        });
+        const chunkWithName = data.chunks;
         setChildrenChunks(chunkWithName);
         //console.log('FETCH CALLED:', chunkWithName);
       })
@@ -263,19 +252,18 @@ const ChunksPicker = ({ entryFile, className }) => {
     }
     // HERE chunkName and filepath are extracted ,
     // so we will now remove chunkName, as its not used in api
-    const { /*chunkName,*/ filepath } = fcRef.current[index];
+    const { filepath } = fcRef.current[index];
     return (
       <motion.div
-        key={/*chunkName*/ filepath}
+        key={filepath}
         animate={{ y: style.top }}
         initial={{ y: style.top - 56 }}
         style={{ top: 0, position: 'absolute', width: '100%' }}
-        // layoutTransition={spring}
       >
         <ListItem
           button
-          data-checked={selectedChunksRef.current.has(/*chunkName*/ filepath) ? '1' : '0'}
-          data-chunk-name={/*chunkName*/ filepath}
+          data-checked={selectedChunksRef.current.has(filepath) ? '1' : '0'}
+          data-chunk-name={filepath}
           data-filepath={filepath}
           onClick={handleChunkEnterRef.current}
           disabled={processingRef.current}
@@ -286,15 +274,15 @@ const ChunksPicker = ({ entryFile, className }) => {
             tabIndex={-1}
             edge="start"
             inputProps={{
-              'aria-labelledby': /*chunkName*/ filepath,
-              'data-checked': selectedChunksRef.current.has(/*chunkName*/ filepath) ? '1' : '0',
-              'data-chunk-name': /*chunkName*/ filepath,
+              'aria-labelledby': filepath,
+              'data-checked': selectedChunksRef.current.has(filepath) ? '1' : '0',
+              'data-chunk-name': filepath,
               'data-filepath': filepath,
               onClick: handleCheckboxToggleRef.current,
             }}
-            checked={selectedChunksRef.current.has(/*chunkName*/ filepath)}
+            checked={selectedChunksRef.current.has(filepath)}
           />
-          <ListItemText primary={/*chunkName*/ filepath} />
+          <ListItemText primary={filepath} />
           <ChevronRightIcon edge="end" />
         </ListItem>
       </motion.div>
@@ -365,7 +353,7 @@ const ChunksPicker = ({ entryFile, className }) => {
                 data-index={index}
               >
                 <Typography variant="subtitle1" color="secondary">
-                  {/*chunkName*/ filepath}
+                  {filepath}
                 </Typography>
               </Link>
             ))}
