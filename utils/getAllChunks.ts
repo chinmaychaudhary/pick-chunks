@@ -46,6 +46,7 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
       if (path.node.callee.type === 'Import') {
         const comments = path.node.arguments[0].leadingComments;
         const filePath = path.node.arguments[0].value;
+        if (!filePath) return;
         if (comments) {
           for (const comment of comments) {
             const chunkNameComment = comment.value.replace("'", '"');

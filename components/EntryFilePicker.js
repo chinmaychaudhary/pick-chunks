@@ -73,7 +73,7 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFi
           setSearchKeyword(newInputValue);
         }}
         filterOptions={(options, state) => {
-          return defaultFilterFiles(options, state).slice(0, 20);
+          return defaultFilterFiles(options, state).slice(0, 100);
         }}
         getOptionLabel={(option) => option.name}
         getOptionSelected={(option, value) => option === value}
