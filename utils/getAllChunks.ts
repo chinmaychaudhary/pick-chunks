@@ -78,8 +78,8 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
       const pathToChunk = resolve(cwd, chunkPath);
       const pathToChunkWithRoot = resolve(root, chunkPath);
 
-      const isRelative = existsSync(pathToChunk);
-      const isFromRoot = existsSync(pathToChunkWithRoot);
+      const isRelative = chunkPath[0] === '.' && existsSync(pathToChunk);
+      const isFromRoot = chunkPath[0] !== '.' && existsSync(pathToChunkWithRoot);
 
       if (!isRelative && !isFromRoot) {
         chunkPath = chunk;
@@ -109,8 +109,8 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
       const pathToImport = resolve(cwd, staticImportPath);
       const pathToImportWithRoot = resolve(root, staticImportPath);
 
-      const isRelative = existsSync(pathToImport);
-      const isFromRoot = existsSync(pathToImportWithRoot);
+      const isRelative = staticImportPath[0] === '.' && existsSync(pathToImport);
+      const isFromRoot = staticImportPath[0] !== '.' && existsSync(pathToImportWithRoot);
 
       if (!isRelative && !isFromRoot) {
         staticImportPath = staticImport;
