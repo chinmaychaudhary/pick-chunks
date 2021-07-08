@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const routesToName = {
-  '/': 'Create New Collection',
+  '/': 'Selecter',
   '/dashboard': 'Collections',
 };
 

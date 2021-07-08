@@ -46,6 +46,7 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
       if (path.node.callee.type === 'Import') {
         const comments = path.node.arguments[0].leadingComments;
         const filePath = path.node.arguments[0].value;
+        if (!filePath) return;
         if (comments) {
           for (const comment of comments) {
             const chunkNameComment = comment.value.replace("'", '"');
@@ -57,7 +58,7 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
           }
         }
 
-        dynamicImportsChunkNames[filePath] = relative(root, filePath);
+        dynamicImportsChunkNames[filePath] = undefined;
         dynamicImports.add(filePath);
       }
     },
@@ -93,9 +94,12 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
       }
 
       if (isRelative) {
-        chunks.set(pathToChunk, dynamicImportsChunkNames[chunk as string]);
+        chunks.set(pathToChunk, dynamicImportsChunkNames[chunk as string] || relative(root, pathToChunk));
       } else if (isFromRoot) {
-        chunks.set(pathToChunkWithRoot, dynamicImportsChunkNames[chunk as string]);
+        chunks.set(
+          pathToChunkWithRoot,
+          dynamicImportsChunkNames[chunk as string] || relative(root, pathToChunkWithRoot)
+        );
       }
     }
   });

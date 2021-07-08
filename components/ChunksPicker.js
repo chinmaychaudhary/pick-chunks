@@ -20,7 +20,15 @@ import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
+import HideIcon from '@material-ui/icons/ExpandLessOutlined';
 import Grid from '@material-ui/core/Grid';
+import { HomeOutlined } from '@material-ui/icons';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import { Button } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
@@ -109,6 +117,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [processing, setProcessing] = useState(false);
   const [keyword, setKeyword] = useState('');
   const [selectedChunks, setSelectedChunks] = useState(new Set());
+  const [isDialog, setIsDialog] = useState(false);
 
   const fuzSearch = useMemo(() => {
     return new FuzzySearch(childrenChunks, ['chunkName']);
@@ -313,6 +322,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       .then(() => {
         snackBarMessage.current = `Collection saved !`;
         setSnackbarVisibility(true);
+        setIsDialog(false);
       })
       .catch((err) => {
         snackBarMessage.current = `Unable to save the collection !`;
@@ -323,6 +333,10 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [collectionName, setCollectionName] = useState('');
   const [emptyNameError, setEmptyNameError] = useState(false);
   const [collectionDescription, setCollectionDescription] = useState('');
+  const [isChildrenChunks, setIsChildrenChunks] = useState(false);
+  useEffect(() => {
+    setIsChildrenChunks(childrenChunks != null && childrenChunks.length > 0);
+  }, [childrenChunks]);
 
   return !!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size ? (
     <Box mt={2} className={className} display="flex" flexDirection="column">
@@ -348,14 +362,22 @@ const ChunksPicker = ({ entryFile, className }) => {
                 onClick={handleCrumbClick}
                 data-index={index}
               >
-                <Typography variant="subtitle1" color="secondary">
-                  {chunkName}
-                </Typography>
+                {chunkName !== entryFile?.name ? (
+                  <Typography variant="subtitle1" color="secondary">
+                    {chunkName}
+                  </Typography>
+                ) : (
+                  <HomeOutlined />
+                )}
               </Link>
             ))}
             {/*The latest breadcrumb [Accessories] */}
             <Typography variant="subtitle1" color="textPrimary">
-              {crumbs[crumbs.length - 1].chunkName}
+              {crumbs[crumbs.length - 1].chunkName !== entryFile?.name ? (
+                <Typography variant="subtitle1">{crumbs[crumbs.length - 1].chunkName}</Typography>
+              ) : (
+                <HomeOutlined />
+              )}
             </Typography>
           </Breadcrumbs>
           {/* 2. Search Chunks and copy delete options */}
@@ -364,8 +386,12 @@ const ChunksPicker = ({ entryFile, className }) => {
             <TextField
               variant="outlined"
               flex="0 0 auto"
-              style={{ marginBottom: '20px', width: '35%' }}
+              style={{
+                marginBottom: '20px',
+                width: '35%',
+              }}
               label="Search Chunks"
+              disabled={!isChildrenChunks}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
@@ -380,7 +406,13 @@ const ChunksPicker = ({ entryFile, className }) => {
               <IconButton disabled={!selectedChunks.size} onClick={handleDeselectAll} aria-label="deselect all">
                 <DeleteOutlineIcon />
               </IconButton>
-              <IconButton disabled={!selectedChunks.size} onClick={handleSaveCollection} aria-label="save collection">
+              <IconButton
+                disabled={!selectedChunks.size}
+                onClick={() => {
+                  setIsDialog(true);
+                }}
+                aria-label="save collection"
+              >
                 <SaveIcon />
               </IconButton>
             </Box>
@@ -396,19 +428,38 @@ const ChunksPicker = ({ entryFile, className }) => {
             width="100%"
             maxWidth="100%"
           >
-            <div className={classes.listRoot} style={{ height, width: width - selectionBoxWidth }}>
+            <div
+              className={classes.listRoot}
+              style={{
+                height,
+                width: width - selectionBoxWidth,
+              }}
+            >
               {/* FixedSizeList: creates a scrollable list of items;
               itemSize:{Height of item} height:{height of container} width:{width of container} itemCount:{total items}*/}
-              <FixedSizeList
-                height={height}
-                width={width - selectionBoxWidth}
-                itemSize={58}
-                itemCount={filteredChunks?.length || 0}
-                data={windowData}
-              >
-                {/*Containes styled individual ListItem */}
-                {ListItemContainer}
-              </FixedSizeList>
+              {isChildrenChunks ? (
+                <FixedSizeList
+                  height={height}
+                  width={width - selectionBoxWidth}
+                  itemSize={58}
+                  itemCount={filteredChunks?.length || 0}
+                  data={windowData}
+                >
+                  {/*Containes styled individual ListItem */}
+                  {ListItemContainer}
+                </FixedSizeList>
+              ) : (
+                <Box
+                  height="100%"
+                  width={width - selectionBoxWidth}
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  textAlign="center"
+                >
+                  <Typography>No Chunks found in {crumbs[crumbs.length - 1]?.chunkName} </Typography>
+                </Box>
+              )}
             </div>
             <Box ref={selectedContainerRef} flex="1">
               <Box
@@ -427,30 +478,6 @@ const ChunksPicker = ({ entryFile, className }) => {
                 top="0"
                 overflow="auto"
               >
-                <form>
-                  <Grid container spacing={3}>
-                    <Grid item xs={4}>
-                      <TextField
-                        label="Name"
-                        error={emptyNameError}
-                        value={collectionName}
-                        onChange={(e) => setCollectionName(e.target.value)}
-                        variant="outlined"
-                        fullWidth={true}
-                        required
-                      />
-                    </Grid>
-                    <Grid item xs>
-                      <TextField
-                        label="Description"
-                        variant="outlined"
-                        fullWidth={true}
-                        value={collectionDescription}
-                        onChange={(e) => setCollectionDescription(e.target.value)}
-                      />
-                    </Grid>
-                  </Grid>
-                </form>
                 {[...selectedChunks].map((chunk) => (
                   <motion.div
                     key={chunk}
@@ -485,6 +512,40 @@ const ChunksPicker = ({ entryFile, className }) => {
         TransitionComponent={SlideTransition}
         message={snackBarMessage.current}
       />
+      <Dialog
+        fullWidth={true}
+        open={isDialog}
+        onClose={() => {
+          setIsDialog(false);
+        }}
+      >
+        <DialogTitle>Save Collection</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Name"
+            error={emptyNameError}
+            value={collectionName}
+            onChange={(e) => setCollectionName(e.target.value)}
+            variant="outlined"
+            fullWidth={true}
+            required
+            margin="normal"
+          />
+          <TextField
+            label="Description"
+            variant="outlined"
+            fullWidth={true}
+            value={collectionDescription}
+            onChange={(e) => setCollectionDescription(e.target.value)}
+            margin="normal"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSaveCollection} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   ) : (
     <></>
