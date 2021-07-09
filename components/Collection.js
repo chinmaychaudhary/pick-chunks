@@ -43,23 +43,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function isEmpty(str) {
-  return !str || str.length === 0;
-}
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
 }
 
 const getChunksfromName = (objects, name) => {
-  if (isEmpty(name)) {
-    return (
-      <Box display="flex" justifyContent="center">
-        <Typography variant="h5" component="h2">
-          Choose a Collection!
-        </Typography>
-      </Box>
-    );
-  }
   const chosenItemObject = objects.find((object) => object.name === name);
   const chunks = chosenItemObject?.chunks;
 
@@ -74,21 +62,14 @@ const getChunksfromName = (objects, name) => {
 };
 
 const getDescriptionFromName = (objects, name) => {
-  if (isEmpty(name)) {
-    return '';
-  }
   const chosenItemObject = objects.find((object) => object.name === name);
   const description = chosenItemObject?.description;
   return description;
 };
 
 const getChunks = (objects, name) => {
-  if (isEmpty(name)) {
-    return [];
-  }
   const chosenItemObject = objects.find((object) => object.name === name);
   const chunks = chosenItemObject?.chunks;
-  //console.log('Chunks', chunks);
   return chunks;
 };
 
