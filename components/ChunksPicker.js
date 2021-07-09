@@ -20,6 +20,7 @@ import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
+import Image from 'next/image';
 import HideIcon from '@material-ui/icons/ExpandLessOutlined';
 import Grid from '@material-ui/core/Grid';
 import { HomeOutlined } from '@material-ui/icons';
@@ -453,11 +454,13 @@ const ChunksPicker = ({ entryFile, className }) => {
                   height="100%"
                   width={width - selectionBoxWidth}
                   display="flex"
+                  flexDirection="column"
                   justifyContent="center"
                   alignItems="center"
                   textAlign="center"
                 >
-                  <Typography>No Chunks found in {crumbs[crumbs.length - 1]?.chunkName} </Typography>
+                  <Image src="/empty.svg" height={200} width={200} alt="no chunks"></Image>
+                  <Typography>No Chunks found! </Typography>
                 </Box>
               )}
             </div>

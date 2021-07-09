@@ -9,7 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { Chip, List } from '@material-ui/core';
 import { motion } from 'framer-motion';
 import Typography from '@material-ui/core/Typography';
-
+import Image from 'next/image';
 import Layout from '../components/Layout';
 import { useFetch } from '../components/customHooks/useFetch';
 
@@ -139,10 +139,12 @@ const Collection = ({ dataReceived }) => {
   return (
     <Box className={classes.mainContent} p={5}>
       {!dataReceived.length ? (
-        <Box display="flex" justifyContent="center">
+        <Box display="flex" flexDirection="column" height="100%" justifyContent="center" alignItems="center">
+          <Image src="/no-data.svg" height={200} width={200} alt="no collections"></Image>
           <Typography variant="h5" component="h2">
-            Oops ! No Collection Here ...
+            No Collection Available!
           </Typography>
+          <Typography>Your saved collections will appear here.</Typography>
         </Box>
       ) : (
         <Box
