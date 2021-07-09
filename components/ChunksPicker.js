@@ -136,7 +136,7 @@ const ChunksPicker = ({ entryFile, className }) => {
 
   const handleChunkEnter = useCallback((e) => {
     // e.currentTarget.dataset is used for list items
-    console.log('HandleChunksEnter called', e.currentTarget.dataset);
+    //console.log('HandleChunksEnter called', e.currentTarget.dataset);
     const { filepath, chunkName } = e.currentTarget.dataset;
     setCrumbs((prevCrumbs) => prevCrumbs.concat({ filepath, chunkName }));
     setKeyword('');
@@ -257,7 +257,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       return null;
     }
     // HERE chunkName and filepath are extracted
-    console.log('fcRef.current[index]', fcRef.current[index]);
+    //('fcRef.current[index]', fcRef.current[index]);
     const { filepath, chunkName } = fcRef.current[index];
     return (
       <motion.div
@@ -317,7 +317,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(collectionData),
     };
-    console.log(collectionData);
+    //console.log(collectionData);
     fetch('/api/collection/add', requestOptions)
       .then(() => {
         snackBarMessage.current = `Collection saved !`;
