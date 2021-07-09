@@ -127,7 +127,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     () => (keyword ? fuzSearch.search(keyword) : childrenChunks),
     [fuzSearch, keyword, childrenChunks]
   );
-  console.log('filteredChunks,', filteredChunks);
+  //console.log('filteredChunks,', filteredChunks);
   const fcRef = useRef(filteredChunks);
   const selectedChunksRef = useRef(selectedChunks);
   const processingRef = useRef(processing);
