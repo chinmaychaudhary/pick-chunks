@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import FuzzySearch from 'fuzzy-search';
 import { FixedSizeList } from 'react-window';
-import { motion } from 'framer-motion';
 import useMeasure from 'react-use/lib/useMeasure';
+
+import Image from 'next/image';
+
+import FuzzySearch from 'fuzzy-search';
+
+import { motion } from 'framer-motion';
+
 import { makeStyles } from '@material-ui/core/styles';
 import Link from '@material-ui/core/Link';
 import Box from '@material-ui/core/Box';
@@ -20,7 +25,6 @@ import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
-import Image from 'next/image';
 import { HomeOutlined } from '@material-ui/icons';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -58,7 +62,7 @@ function SlideTransition(props) {
 
 const ChunksPicker = ({ entryFile, className }) => {
   const classes = useStyles();
-
+  // loads all descendent chunks
   const loadAllDescendantChunks = useCallback(
     (filepath) =>
       new Promise((resolve, reject) => {
@@ -79,7 +83,8 @@ const ChunksPicker = ({ entryFile, className }) => {
       }),
     []
   );
-
+  // assumption: EntryFile is descided from api/files which has only filename as a parameter, so
+  // the initial crumb which is entry file in pick entry, has chunkName set to its relative filepath.
   const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.name, chunkName: entryFile?.name }]);
   useEffect(() => {
     setCrumbs([{ filepath: entryFile?.name, chunkName: entryFile?.name }]);
@@ -92,8 +97,11 @@ const ChunksPicker = ({ entryFile, className }) => {
     setCrumbs((prevCrumbs) => [...prevCrumbs.slice(0, index + 1)]);
   }, []);
 
-  // childrenChunks contains [{filepath: string, chunkName: string}]
+  // children chunks are used in showing the children chunks of recently selected chunk
+  // childrenChunks :[{filepath: string, chunkName: string}]
   const [childrenChunks, setChildrenChunks] = useState(null);
+  // isLoading is used to handle empty state of chunks
+  const [isLoadingChunks, setIsLoadingChunks] = useState(false);
   useEffect(() => {
     const path = crumbs[crumbs.length - 1].filepath;
     if (!path) return;
@@ -114,9 +122,13 @@ const ChunksPicker = ({ entryFile, className }) => {
       .catch((err) => alert(err));
   }, [crumbs]);
 
+  // processing is used to handle subgraph add and remove's loading state
   const [processing, setProcessing] = useState(false);
+  // used for search chunks fuzzy search variable
   const [keyword, setKeyword] = useState('');
+  // set of all selected chunks by user
   const [selectedChunks, setSelectedChunks] = useState(new Set());
+  // dialogue to save the collection
   const [isDialog, setIsDialog] = useState(false);
 
   const fuzSearch = useMemo(() => {
@@ -126,16 +138,19 @@ const ChunksPicker = ({ entryFile, className }) => {
     () => (keyword ? fuzSearch.search(keyword) : childrenChunks),
     [fuzSearch, keyword, childrenChunks]
   );
- 
+
+  // chunks filtered for search chunks
   const fcRef = useRef(filteredChunks);
+  // chunks selected by user in search chunks
   const selectedChunksRef = useRef(selectedChunks);
+  // handling chunks processing of adding and removing subgraphs
   const processingRef = useRef(processing);
   fcRef.current = filteredChunks;
   selectedChunksRef.current = selectedChunks;
   processingRef.current = processing;
 
   const handleChunkEnter = useCallback((e) => {
-    // e.currentTarget.dataset is used for list items
+    // e.currentTarget.dataset is used for list items to get the item
     const { filepath, chunkName } = e.currentTarget.dataset;
     setCrumbs((prevCrumbs) => prevCrumbs.concat({ filepath, chunkName }));
     setKeyword('');
@@ -155,6 +170,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   const handleSingleChunkSelect = useCallback((chunkName) => {
     setSelectedChunks((prev) => new Set([...prev, chunkName]));
   }, []);
+
   // selects the subgraph , its used when user uses keyboard input {p}
   const handleEntireSubGraphSelect = useCallback(
     (chunkName, filepath) => {
@@ -170,6 +186,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     },
     [loadAllDescendantChunks]
   );
+
   // as name says it removes the single chunk, its used when user uses keyboard input {x}
   const handleSingleChunkRemove = useCallback((chunkName) => {
     setSelectedChunks((prev) => {
@@ -213,10 +230,12 @@ const ChunksPicker = ({ entryFile, className }) => {
     },
     [handleSingleChunkSelect, handleSingleChunkRemove, handleEntireSubGraphSelect, handleEntireSubGraphRemove]
   );
+
   // fired when the checkbox in Chunk-item from itemList is clicked
   const handleCheckboxToggle = useCallback(
     (e) => {
-      // WHY stopPropogation is used ??
+      // used to stop onClick propogation to parent which leads to selecting that chunk in checkbox as well as moving to that chunk
+      // as now that chunk is selected as well
       e.stopPropagation();
       const { filepath, chunkName, checked } = e.currentTarget.dataset;
       if (checked === '0') {
@@ -242,6 +261,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     navigator.clipboard?.writeText([...selectedChunks].join()).then(() => setSnackbarVisibility(true));
   }, [selectedChunks]);
 
+  // used to not create the function again and again.
   const handleChunkEnterRef = useRef(handleChunkEnter);
   const handleItemKeyDownRef = useRef(handleItemKeyDown);
   const handleCheckboxToggleRef = useRef(handleCheckboxToggle);
@@ -253,8 +273,6 @@ const ChunksPicker = ({ entryFile, className }) => {
     if (!fcRef.current[index]) {
       return null;
     }
-    // HERE chunkName and filepath are extracted
-    //('fcRef.current[index]', fcRef.current[index]);
     const { filepath, chunkName } = fcRef.current[index];
     return (
       <motion.div
@@ -262,7 +280,6 @@ const ChunksPicker = ({ entryFile, className }) => {
         animate={{ y: style.top }}
         initial={{ y: style.top - 56 }}
         style={{ top: 0, position: 'absolute', width: '100%' }}
-        // layoutTransition={spring}
       >
         <ListItem
           button
@@ -297,7 +314,6 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [containerRef, { height, width }] = useMeasure();
   // useMeasure, returns the width of the container referenced with selectedContainerRef once its mounted
   const [selectedContainerRef, { width: selectionBoxWidth }] = useMeasure();
-  // Error here : react hooks has unnecessary dependencies
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const windowData = useMemo(() => ({}), [selectedChunks, processing, filteredChunks]);
 
@@ -330,7 +346,6 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [emptyNameError, setEmptyNameError] = useState(false);
   const [collectionDescription, setCollectionDescription] = useState('');
   const [isChildrenChunks, setIsChildrenChunks] = useState(false);
-  const [isLoadingChunks, setIsLoadingChunks] = useState(false);
   useEffect(() => {
     setIsChildrenChunks(childrenChunks != null && childrenChunks.length > 0);
   }, [childrenChunks]);
@@ -377,7 +392,7 @@ const ChunksPicker = ({ entryFile, className }) => {
               )}
             </Typography>
           </Breadcrumbs>
-          {/* 2. Search Chunks and copy delete options */}
+          {/* 2. Search Chunks and copy, delete save collection options */}
           <Box display="flex" alignItems="flex-end">
             {/*input field for to search for a chunk*/}
             <TextField
@@ -393,13 +408,11 @@ const ChunksPicker = ({ entryFile, className }) => {
               onChange={(e) => setKeyword(e.target.value)}
             />
 
-            {/*Buttons to perfoem delete or copy on above TextField */}
+            {/*Buttons to perform delete or copy on above TextField, save collection for selected chunks */}
             <Box ml="auto">
-              {/*Copy Button*/}
               <IconButton disabled={!selectedChunks.size} onClick={handleCopy} aria-label="copy">
                 <FileCopyOutlinedIcon />
               </IconButton>
-              {/*Delete Button*/}
               <IconButton disabled={!selectedChunks.size} onClick={handleDeselectAll} aria-label="deselect all">
                 <DeleteOutlineIcon />
               </IconButton>
@@ -476,7 +489,6 @@ const ChunksPicker = ({ entryFile, className }) => {
                 justifyContent="center"
                 flexWrap="wrap"
                 borderRadius="borderRadius"
-                // bgcolor="background.paper"
                 borderColor="text.primary"
                 border={1}
                 mx={2}
