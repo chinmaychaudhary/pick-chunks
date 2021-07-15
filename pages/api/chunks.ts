@@ -19,7 +19,7 @@ export default async function handler(req: any, res: NextApiResponse<Data>) {
         chunks: tree.chunks,
       },
       (_, value) => {
-        // Stringify Set
+        // Stringify ES6 Map
         if (typeof value === 'object' && value instanceof Map) {
           const obj = [];
           for (const [filepath, chunkName] of value) {

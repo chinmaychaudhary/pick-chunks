@@ -151,7 +151,7 @@ const getCollections = (configPath: string) => {
 
       if (collectionProperty.length === 1) {
         if (!t.isArrayExpression(collectionProperty[0].value)) {
-          throw Error('Collections value should be array');
+          throw Error('Collections value should be an array');
         }
         collections = collectionProperty[0].value.elements.map((collectionNode: any) => {
           const collection: any = {};

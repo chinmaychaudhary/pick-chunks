@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname, relative } from 'path';
 
 let store: Record<string, any> = {};
-const extensions = ['.js', '.ts', '.tsx', '/index.js', '/index.ts', 'index/tsx'];
+const extensions = ['.js', '.ts', '.tsx', '/index.js', '/index.ts', '/index.tsx'];
 
 export const clearStore = () => {
   store = {};
@@ -12,6 +12,8 @@ export const clearStore = () => {
 
 export const getAllChunks = (path: string, root: string): Record<string, any> => {
   path = resolve(root, path);
+
+  // path is considered cyclic as it is visited but not completed execution
   if (store[path] === null) {
     return Promise.resolve({
       path,
@@ -46,11 +48,16 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
       if (path.node.callee.type === 'Import') {
         const comments = path.node.arguments[0].leadingComments;
         const filePath = path.node.arguments[0].value;
-        if (!filePath) return;
+
+        if (!filePath) {
+          return;
+        }
+
         if (comments) {
           for (const comment of comments) {
             const chunkNameComment = comment.value.replace("'", '"');
             if (chunkNameComment.includes('webpackChunkName')) {
+              // Assuming webpackChunkName comment to be of format /* webpackChunkName: "name" */
               dynamicImportsChunkNames[filePath] = chunkNameComment.split('"')[1];
               dynamicImports.add(filePath);
               return;
@@ -108,7 +115,7 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
 
   const children: any = [];
 
-  // Traverse children of current path, dynamic imports are not children
+  // Traverse children of current path, Assuming dynamic imports are not children
   for (const staticImport of staticImports) {
     let staticImportPath = staticImport;
     for (const extension of extensions) {

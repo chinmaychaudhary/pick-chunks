@@ -7,7 +7,7 @@ import Collection from '../components/Collection';
 import Skeleton from '@material-ui/lab/Skeleton';
 
 function Dashboard() {
-  const { data: dataReceived, loading: dataLoading } = useFetch('api/collection/list');
+  const { data: dataReceived, loading: dataLoading } = useFetch('/api/collection/list');
   return (
     <Box>
       <Layout>{dataLoading ? <Skeleton /> : <Collection dataReceived={dataReceived} />}</Layout>
