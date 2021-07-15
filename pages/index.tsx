@@ -11,7 +11,6 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import { EntryFilePicker } from '../components/EntryFilePicker';
 import { ChunksPicker } from '../components/ChunksPicker';
-import { useFetch } from '../components/customHooks/useFetch';
 import Layout from '../components/Layout';
 
 const useStyles = makeStyles((theme) => ({

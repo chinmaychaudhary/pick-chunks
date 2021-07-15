@@ -10,9 +10,6 @@ import { Chip, List } from '@material-ui/core';
 import { motion } from 'framer-motion';
 import Typography from '@material-ui/core/Typography';
 import Image from 'next/image';
-import Layout from '../components/Layout';
-import { useFetch } from '../components/customHooks/useFetch';
-
 import Snackbar from '@material-ui/core/Snackbar';
 import Slide, { SlideProps } from '@material-ui/core/Slide';
 

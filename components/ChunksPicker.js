@@ -97,6 +97,8 @@ const ChunksPicker = ({ entryFile, className }) => {
   useEffect(() => {
     const path = crumbs[crumbs.length - 1].filepath;
     if (!path) return;
+    setChildrenChunks([]);
+    setIsLoadingChunks(true);
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -107,6 +109,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       .then((data) => {
         const chunkWithName = data.chunks;
         setChildrenChunks(chunkWithName);
+        setIsLoadingChunks(false);
       })
       .catch((err) => alert(err));
   }, [crumbs]);
@@ -327,6 +330,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [emptyNameError, setEmptyNameError] = useState(false);
   const [collectionDescription, setCollectionDescription] = useState('');
   const [isChildrenChunks, setIsChildrenChunks] = useState(false);
+  const [isLoadingChunks, setIsLoadingChunks] = useState(false);
   useEffect(() => {
     setIsChildrenChunks(childrenChunks != null && childrenChunks.length > 0);
   }, [childrenChunks]);
@@ -451,8 +455,17 @@ const ChunksPicker = ({ entryFile, className }) => {
                   alignItems="center"
                   textAlign="center"
                 >
-                  <Image src="/empty.svg" height={200} width={200} alt="no chunks"></Image>
-                  <Typography>No Chunks found! </Typography>
+                  {!isLoadingChunks ? (
+                    <>
+                      <Image src="/empty.svg" height={200} width={200} alt="no chunks"></Image>
+                      <Typography>No Chunks found!</Typography>
+                    </>
+                  ) : (
+                    <>
+                      <Image src="/loading.svg" height={200} width={200} alt="loading"></Image>
+                      <Typography>Loading...</Typography>
+                    </>
+                  )}
                 </Box>
               )}
             </div>
