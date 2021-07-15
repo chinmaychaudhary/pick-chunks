@@ -95,15 +95,12 @@ const Collection = ({ dataReceived }) => {
   const previewChips = getChunksfromName(dataReceived, chosenItem.name);
   const description = getDescriptionFromName(dataReceived, chosenItem.name);
   const selectedChunks = getChunks(dataReceived, chosenItem.name);
-  //console.log('after getChunks called', selectedChunks);
   // FUZZY SEARCH
   const fuzSearch = useMemo(() => {
     return new FuzzySearch(dataReceived, ['name']);
   }, [dataReceived]);
 
   const [keyword, setKeyword] = useState('');
-  // const filteredCollection = keyword ? fuzSearch.search(keyword) : dataReceived;
-  // console.log(filteredCollection);
   const filteredCollection = useMemo(
     () => (keyword ? fuzSearch.search(keyword) : dataReceived),
     [fuzSearch, keyword, dataReceived]
@@ -112,7 +109,6 @@ const Collection = ({ dataReceived }) => {
   const [shouldShowSnackbar, setSnackbarVisibility] = useState(false);
   const hideSnackbar = useCallback(() => setSnackbarVisibility(false), []);
   const handleCopy = useCallback(() => {
-    //console.log('handleCopy is called');
     //eslint-disable-next-line
     navigator.clipboard?.writeText([...selectedChunks].join()).then(() => setSnackbarVisibility(true));
   }, [selectedChunks]);

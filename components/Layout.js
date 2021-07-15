@@ -1,5 +1,8 @@
+import React, { useState } from 'react';
+
+import { useRouter } from 'next/router';
+
 import { makeStyles } from '@material-ui/core/styles';
-import React from 'react';
 import Box from '@material-ui/core/Box';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
@@ -13,9 +16,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import PageIcon from '@material-ui/icons/ChevronRightOutlined';
 import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
-import { useState } from 'react';
+
 import { Logo } from './icons/Logo';
-import { useRouter } from 'next/router';
 import { useFetch } from './customHooks/useFetch';
 
 const useStyles = makeStyles((theme) => ({

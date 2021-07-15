@@ -21,13 +21,10 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
 import Image from 'next/image';
-import HideIcon from '@material-ui/icons/ExpandLessOutlined';
-import Grid from '@material-ui/core/Grid';
 import { HomeOutlined } from '@material-ui/icons';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { Button } from '@material-ui/core';
 
@@ -79,7 +76,6 @@ const ChunksPicker = ({ entryFile, className }) => {
             resolve(chunkNames);
           })
           .catch((err) => reject(err));
-        // reject('yet to implement');
       }),
     []
   );
@@ -96,7 +92,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     setCrumbs((prevCrumbs) => [...prevCrumbs.slice(0, index + 1)]);
   }, []);
 
-  // childrenChunks contains [{filepath: string, chunksName: string}]
+  // childrenChunks contains [{filepath: string, chunkName: string}]
   const [childrenChunks, setChildrenChunks] = useState(null);
   useEffect(() => {
     const path = crumbs[crumbs.length - 1].filepath;
@@ -127,7 +123,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     () => (keyword ? fuzSearch.search(keyword) : childrenChunks),
     [fuzSearch, keyword, childrenChunks]
   );
-  //console.log('filteredChunks,', filteredChunks);
+ 
   const fcRef = useRef(filteredChunks);
   const selectedChunksRef = useRef(selectedChunks);
   const processingRef = useRef(processing);
@@ -137,7 +133,6 @@ const ChunksPicker = ({ entryFile, className }) => {
 
   const handleChunkEnter = useCallback((e) => {
     // e.currentTarget.dataset is used for list items
-    //console.log('HandleChunksEnter called', e.currentTarget.dataset);
     const { filepath, chunkName } = e.currentTarget.dataset;
     setCrumbs((prevCrumbs) => prevCrumbs.concat({ filepath, chunkName }));
     setKeyword('');
@@ -154,7 +149,6 @@ const ChunksPicker = ({ entryFile, className }) => {
   }, []);
 
   // selects the current chunk and appends to the chunks, its used when user uses keyboard input {s}
-
   const handleSingleChunkSelect = useCallback((chunkName) => {
     setSelectedChunks((prev) => new Set([...prev, chunkName]));
   }, []);
@@ -181,7 +175,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     });
   }, []);
 
-  // as name says removes all the child chunks and also undetstood this code
+  // as name says removes all the child chunks
   const handleEntireSubGraphRemove = useCallback(
     (chunkName, filepath) => {
       const nextChunks = new Set([...selectedChunksRef.current]);
@@ -200,7 +194,6 @@ const ChunksPicker = ({ entryFile, className }) => {
   const handleItemKeyDown = useCallback(
     (e) => {
       const { filepath, chunkName, checked } = e.currentTarget.dataset;
-      // chunksName and filepath are equal to filepath only
       const isActive = checked === '1';
       switch (e.key) {
         case 's':
@@ -318,7 +311,6 @@ const ChunksPicker = ({ entryFile, className }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(collectionData),
     };
-    //console.log(collectionData);
     fetch('/api/collection/add', requestOptions)
       .then(() => {
         snackBarMessage.current = `Collection saved !`;
