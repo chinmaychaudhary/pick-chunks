@@ -58,9 +58,11 @@ const Layout = ({ children }) => {
   const router = useRouter();
   const [selectedlink, setSelectedLink] = useState(router.pathname);
   const [isDialog, setIsDialog] = useState(false);
+  // used to fetch the version which is shown in about tab
   const { data: version, loading: isVersionLoading } = useFetch('/version');
 
   const handleLinkSelect = (e, value) => {
+    // if value is in routesName and its not current pathname ,then only switch to that route
     if (Object.keys(routesToName).includes(value)) {
       if (value !== selectedlink) {
         router.push(value);
@@ -73,7 +75,6 @@ const Layout = ({ children }) => {
     }
   };
 
-  console.log(version);
   return (
     <Box display="flex" flexDirection="row">
       <div className={classes.drawer}>
@@ -127,6 +128,7 @@ const Layout = ({ children }) => {
         <DialogContent>
           <DialogContentText>Version: {isVersionLoading ? '...' : version.version}</DialogContentText>
           <DialogContentText>
+            {/*Opens the pick-chunks github repository in new window page as target is "_blank" */}
             <Link href="https://github.com/chicho17/pick-chunks" target="_blank">
               Github Respository
             </Link>
