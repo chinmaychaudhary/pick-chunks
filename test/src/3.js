@@ -1,1 +1,1 @@
-import('./4');
+import(/* webpackChunkName: "4" */ './4');

@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import FuzzySearch from 'fuzzy-search';
 import { FixedSizeList } from 'react-window';
-import { motion } from 'framer-motion';
 import useMeasure from 'react-use/lib/useMeasure';
+
+import Image from 'next/image';
+
+import FuzzySearch from 'fuzzy-search';
+
+import { motion } from 'framer-motion';
+
 import { makeStyles } from '@material-ui/core/styles';
 import Link from '@material-ui/core/Link';
 import Box from '@material-ui/core/Box';
@@ -20,7 +25,12 @@ import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
-import Grid from '@material-ui/core/Grid';
+import { HomeOutlined } from '@material-ui/icons';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import { Button } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
@@ -52,74 +62,97 @@ function SlideTransition(props) {
 
 const ChunksPicker = ({ entryFile, className }) => {
   const classes = useStyles();
-  // YET TO IMPLEMENT, used to find all the descendents of a chunk,
-  // used in handleEntireSubGraphSelect
+  // loads all descendent chunks
   const loadAllDescendantChunks = useCallback(
-    () =>
+    (filepath) =>
       new Promise((resolve, reject) => {
-        reject('yet to implement');
+        fetch('api/chunks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: filepath }),
+        })
+          .then((res) => {
+            return res.json();
+          })
+          .then((res) => {
+            const chunks = res.chunks;
+            const chunkNames = chunks.map((chunk) => chunk.chunkName);
+            resolve(chunkNames);
+          })
+          .catch((err) => reject(err));
       }),
     []
   );
-
-  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.name }]);
+  // assumption: EntryFile is descided from api/files which has only filename as a parameter, so
+  // the initial crumb which is entry file in pick entry, has chunkName set to its relative filepath.
+  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.name, chunkName: entryFile?.name }]);
   useEffect(() => {
-    setCrumbs([{ filepath: entryFile?.name }]);
+    setCrumbs([{ filepath: entryFile?.name, chunkName: entryFile?.name }]);
     setKeyword('');
   }, [entryFile]);
+
   const handleCrumbClick = useCallback((e) => {
     e.preventDefault();
     const index = +e.currentTarget.dataset.index;
     setCrumbs((prevCrumbs) => [...prevCrumbs.slice(0, index + 1)]);
   }, []);
 
+  // children chunks are used in showing the children chunks of recently selected chunk
+  // childrenChunks :[{filepath: string, chunkName: string}]
   const [childrenChunks, setChildrenChunks] = useState(null);
+  // isLoading is used to handle empty state of chunks
+  const [isLoadingChunks, setIsLoadingChunks] = useState(false);
   useEffect(() => {
     const path = crumbs[crumbs.length - 1].filepath;
     if (!path) return;
+    setChildrenChunks([]);
+    setIsLoadingChunks(true);
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path: path }),
     };
-    console.log('FETCH CALLED WITH PATH:', path);
     fetch('/api/chunks', requestOptions)
       .then((response) => response.json())
       .then((data) => {
-        const chunkWithName = data.chunks.map((item) => {
-          return {
-            filepath: item,
-          };
-        });
+        const chunkWithName = data.chunks;
         setChildrenChunks(chunkWithName);
-        console.log('FETCH CALLED:', chunkWithName);
+        setIsLoadingChunks(false);
       })
       .catch((err) => alert(err));
   }, [crumbs]);
 
+  // processing is used to handle subgraph add and remove's loading state
   const [processing, setProcessing] = useState(false);
+  // used for search chunks fuzzy search variable
   const [keyword, setKeyword] = useState('');
+  // set of all selected chunks by user
   const [selectedChunks, setSelectedChunks] = useState(new Set());
+  // dialogue to save the collection
+  const [isDialog, setIsDialog] = useState(false);
 
   const fuzSearch = useMemo(() => {
-    return new FuzzySearch(childrenChunks, ['filepath']);
+    return new FuzzySearch(childrenChunks, ['chunkName']);
   }, [childrenChunks]);
   const filteredChunks = useMemo(
     () => (keyword ? fuzSearch.search(keyword) : childrenChunks),
     [fuzSearch, keyword, childrenChunks]
   );
 
+  // chunks filtered for search chunks
   const fcRef = useRef(filteredChunks);
+  // chunks selected by user in search chunks
   const selectedChunksRef = useRef(selectedChunks);
+  // handling chunks processing of adding and removing subgraphs
   const processingRef = useRef(processing);
   fcRef.current = filteredChunks;
   selectedChunksRef.current = selectedChunks;
   processingRef.current = processing;
 
   const handleChunkEnter = useCallback((e) => {
-    // e.currentTarget.dataset is used for list items
-    const { filepath } = e.currentTarget.dataset;
-    setCrumbs((prevCrumbs) => prevCrumbs.concat({ filepath }));
+    // e.currentTarget.dataset is used for list items to get the item
+    const { filepath, chunkName } = e.currentTarget.dataset;
+    setCrumbs((prevCrumbs) => prevCrumbs.concat({ filepath, chunkName }));
     setKeyword('');
   }, []);
 
@@ -133,19 +166,18 @@ const ChunksPicker = ({ entryFile, className }) => {
     });
   }, []);
 
-  // FROM HERE STILL REMAINING
   // selects the current chunk and appends to the chunks, its used when user uses keyboard input {s}
   const handleSingleChunkSelect = useCallback((chunkName) => {
     setSelectedChunks((prev) => new Set([...prev, chunkName]));
   }, []);
+
   // selects the subgraph , its used when user uses keyboard input {p}
   const handleEntireSubGraphSelect = useCallback(
     (chunkName, filepath) => {
-      //DID NOT UNDERSTAND HOW IS IT WORKING ? as it should load descendents but its taking all the current chunks
       const nextChunks = new Set([...selectedChunksRef.current]);
       setProcessing(true);
       loadAllDescendantChunks(filepath).then((descChunks) => {
-        [...descChunks, { chunkName }].forEach(({ chunkName: cName }) => {
+        [...descChunks, chunkName].forEach((cName) => {
           nextChunks.add(cName);
         });
         setSelectedChunks(nextChunks);
@@ -154,6 +186,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     },
     [loadAllDescendantChunks]
   );
+
   // as name says it removes the single chunk, its used when user uses keyboard input {x}
   const handleSingleChunkRemove = useCallback((chunkName) => {
     setSelectedChunks((prev) => {
@@ -162,13 +195,13 @@ const ChunksPicker = ({ entryFile, className }) => {
     });
   }, []);
 
-  // as name says removes all the child chunks and also undetstood this code
+  // as name says removes all the child chunks
   const handleEntireSubGraphRemove = useCallback(
     (chunkName, filepath) => {
       const nextChunks = new Set([...selectedChunksRef.current]);
       setProcessing(true);
       loadAllDescendantChunks(filepath).then((descChunks) => {
-        [...descChunks, { chunkName }].forEach(({ chunkName: cName }) => {
+        [...descChunks, chunkName].forEach((cName) => {
           nextChunks.delete(cName);
         });
         setSelectedChunks(nextChunks);
@@ -182,7 +215,6 @@ const ChunksPicker = ({ entryFile, className }) => {
     (e) => {
       const { filepath, chunkName, checked } = e.currentTarget.dataset;
       const isActive = checked === '1';
-
       switch (e.key) {
         case 's':
           return isActive ? undefined : handleSingleChunkSelect(chunkName);
@@ -198,10 +230,12 @@ const ChunksPicker = ({ entryFile, className }) => {
     },
     [handleSingleChunkSelect, handleSingleChunkRemove, handleEntireSubGraphSelect, handleEntireSubGraphRemove]
   );
+
   // fired when the checkbox in Chunk-item from itemList is clicked
   const handleCheckboxToggle = useCallback(
     (e) => {
-      // WHY stopPropogation is used ??
+      // used to stop onClick propogation to parent which leads to selecting that chunk in checkbox as well as moving to that chunk
+      // as now that chunk is selected as well
       e.stopPropagation();
       const { filepath, chunkName, checked } = e.currentTarget.dataset;
       if (checked === '0') {
@@ -218,14 +252,16 @@ const ChunksPicker = ({ entryFile, className }) => {
     setSelectedChunks(new Set());
   }, [setSelectedChunks]);
 
-  // TILL HERE
   const [shouldShowSnackbar, setSnackbarVisibility] = useState(false);
+  const snackBarMessage = useRef('');
   const hideSnackbar = useCallback(() => setSnackbarVisibility(false), []);
   const handleCopy = useCallback(() => {
     //eslint-disable-next-line
+    snackBarMessage.current = `${selectedChunks.size} chunks copied`;
     navigator.clipboard?.writeText([...selectedChunks].join()).then(() => setSnackbarVisibility(true));
   }, [selectedChunks]);
 
+  // used to not create the function again and again.
   const handleChunkEnterRef = useRef(handleChunkEnter);
   const handleItemKeyDownRef = useRef(handleItemKeyDown);
   const handleCheckboxToggleRef = useRef(handleCheckboxToggle);
@@ -237,20 +273,18 @@ const ChunksPicker = ({ entryFile, className }) => {
     if (!fcRef.current[index]) {
       return null;
     }
-    // HERE chunkName and filepath are extracted ,
-    // so we will now remove chunkName, as its not used in api
-    const { filepath } = fcRef.current[index];
+    const { filepath, chunkName } = fcRef.current[index];
     return (
       <motion.div
-        key={filepath}
+        key={chunkName}
         animate={{ y: style.top }}
         initial={{ y: style.top - 56 }}
         style={{ top: 0, position: 'absolute', width: '100%' }}
       >
         <ListItem
           button
-          data-checked={selectedChunksRef.current.has(filepath) ? '1' : '0'}
-          data-chunk-name={filepath}
+          data-checked={selectedChunksRef.current.has(chunkName) ? '1' : '0'}
+          data-chunk-name={chunkName}
           data-filepath={filepath}
           onClick={handleChunkEnterRef.current}
           disabled={processingRef.current}
@@ -261,15 +295,15 @@ const ChunksPicker = ({ entryFile, className }) => {
             tabIndex={-1}
             edge="start"
             inputProps={{
-              'aria-labelledby': filepath,
-              'data-checked': selectedChunksRef.current.has(filepath) ? '1' : '0',
-              'data-chunk-name': filepath,
+              'aria-labelledby': chunkName,
+              'data-checked': selectedChunksRef.current.has(chunkName) ? '1' : '0',
+              'data-chunk-name': chunkName,
               'data-filepath': filepath,
               onClick: handleCheckboxToggleRef.current,
             }}
-            checked={selectedChunksRef.current.has(filepath)}
+            checked={selectedChunksRef.current.has(chunkName)}
           />
-          <ListItemText primary={filepath} />
+          <ListItemText primary={chunkName} />
           <ChevronRightIcon edge="end" />
         </ListItem>
       </motion.div>
@@ -280,7 +314,6 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [containerRef, { height, width }] = useMeasure();
   // useMeasure, returns the width of the container referenced with selectedContainerRef once its mounted
   const [selectedContainerRef, { width: selectionBoxWidth }] = useMeasure();
-  // Error here : react hooks has unnecessary dependencies
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const windowData = useMemo(() => ({}), [selectedChunks, processing, filteredChunks]);
 
@@ -297,17 +330,25 @@ const ChunksPicker = ({ entryFile, className }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(collectionData),
     };
-    console.log(collectionData);
     fetch('/api/collection/add', requestOptions)
-      .then((response) => console.log(response))
-      .catch((err) => alert(err));
-
-    console.log('Save Button Clicked');
+      .then(() => {
+        snackBarMessage.current = `Collection saved !`;
+        setSnackbarVisibility(true);
+        setIsDialog(false);
+      })
+      .catch((err) => {
+        snackBarMessage.current = `Unable to save the collection !`;
+        setSnackbarVisibility(true);
+      });
   };
 
-  const [collectionName, setCollectionName] = useState('Name');
+  const [collectionName, setCollectionName] = useState('');
   const [emptyNameError, setEmptyNameError] = useState(false);
   const [collectionDescription, setCollectionDescription] = useState('');
+  const [isChildrenChunks, setIsChildrenChunks] = useState(false);
+  useEffect(() => {
+    setIsChildrenChunks(childrenChunks != null && childrenChunks.length > 0);
+  }, [childrenChunks]);
 
   return !!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size ? (
     <Box mt={2} className={className} display="flex" flexDirection="column">
@@ -333,39 +374,55 @@ const ChunksPicker = ({ entryFile, className }) => {
                 onClick={handleCrumbClick}
                 data-index={index}
               >
-                <Typography variant="subtitle1" color="secondary">
-                  {filepath}
-                </Typography>
+                {chunkName !== entryFile?.name ? (
+                  <Typography variant="subtitle1" color="secondary">
+                    {chunkName}
+                  </Typography>
+                ) : (
+                  <HomeOutlined />
+                )}
               </Link>
             ))}
             {/*The latest breadcrumb [Accessories] */}
             <Typography variant="subtitle1" color="textPrimary">
-              {crumbs[crumbs.length - 1].filepath}
+              {crumbs[crumbs.length - 1].chunkName !== entryFile?.name ? (
+                <Typography variant="subtitle1">{crumbs[crumbs.length - 1].chunkName}</Typography>
+              ) : (
+                <HomeOutlined />
+              )}
             </Typography>
           </Breadcrumbs>
-          {/* 2. Search Chunks and copy delete options */}
+          {/* 2. Search Chunks and copy, delete save collection options */}
           <Box display="flex" alignItems="flex-end">
             {/*input field for to search for a chunk*/}
             <TextField
               variant="outlined"
               flex="0 0 auto"
-              style={{ marginBottom: '20px', width: '35%' }}
+              style={{
+                marginBottom: '20px',
+                width: '35%',
+              }}
               label="Search Chunks"
+              disabled={!isChildrenChunks}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
 
-            {/*Buttons to perfoem delete or copy on above TextField */}
+            {/*Buttons to perform delete or copy on above TextField, save collection for selected chunks */}
             <Box ml="auto">
-              {/*Copy Button*/}
               <IconButton disabled={!selectedChunks.size} onClick={handleCopy} aria-label="copy">
                 <FileCopyOutlinedIcon />
               </IconButton>
-              {/*Delete Button*/}
               <IconButton disabled={!selectedChunks.size} onClick={handleDeselectAll} aria-label="deselect all">
                 <DeleteOutlineIcon />
               </IconButton>
-              <IconButton disabled={!selectedChunks.size} onClick={handleSaveCollection} aria-label="save collection">
+              <IconButton
+                disabled={!selectedChunks.size}
+                onClick={() => {
+                  setIsDialog(true);
+                }}
+                aria-label="save collection"
+              >
                 <SaveIcon />
               </IconButton>
             </Box>
@@ -381,19 +438,49 @@ const ChunksPicker = ({ entryFile, className }) => {
             width="100%"
             maxWidth="100%"
           >
-            <div className={classes.listRoot} style={{ height, width: width - selectionBoxWidth }}>
+            <div
+              className={classes.listRoot}
+              style={{
+                height,
+                width: width - selectionBoxWidth,
+              }}
+            >
               {/* FixedSizeList: creates a scrollable list of items;
               itemSize:{Height of item} height:{height of container} width:{width of container} itemCount:{total items}*/}
-              <FixedSizeList
-                height={height}
-                width={width - selectionBoxWidth}
-                itemSize={58}
-                itemCount={filteredChunks?.length || 0}
-                data={windowData}
-              >
-                {/*Containes styled individual ListItem */}
-                {ListItemContainer}
-              </FixedSizeList>
+              {isChildrenChunks ? (
+                <FixedSizeList
+                  height={height}
+                  width={width - selectionBoxWidth}
+                  itemSize={58}
+                  itemCount={filteredChunks?.length || 0}
+                  data={windowData}
+                >
+                  {/*Containes styled individual ListItem */}
+                  {ListItemContainer}
+                </FixedSizeList>
+              ) : (
+                <Box
+                  height="100%"
+                  width={width - selectionBoxWidth}
+                  display="flex"
+                  flexDirection="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  textAlign="center"
+                >
+                  {!isLoadingChunks ? (
+                    <>
+                      <Image src="/empty.svg" height={200} width={200} alt="no chunks"></Image>
+                      <Typography>No Chunks found!</Typography>
+                    </>
+                  ) : (
+                    <>
+                      <Image src="/loading.svg" height={200} width={200} alt="loading"></Image>
+                      <Typography>Loading...</Typography>
+                    </>
+                  )}
+                </Box>
+              )}
             </div>
             <Box ref={selectedContainerRef} flex="1">
               <Box
@@ -402,7 +489,6 @@ const ChunksPicker = ({ entryFile, className }) => {
                 justifyContent="center"
                 flexWrap="wrap"
                 borderRadius="borderRadius"
-                // bgcolor="background.paper"
                 borderColor="text.primary"
                 border={1}
                 mx={2}
@@ -412,30 +498,6 @@ const ChunksPicker = ({ entryFile, className }) => {
                 top="0"
                 overflow="auto"
               >
-                <form>
-                  <Grid container spacing={3}>
-                    <Grid item xs={4}>
-                      <TextField
-                        label="Name"
-                        error={emptyNameError}
-                        value={collectionName}
-                        onChange={(e) => setCollectionName(e.target.value)}
-                        variant="outlined"
-                        fullWidth={true}
-                        required
-                      />
-                    </Grid>
-                    <Grid item xs>
-                      <TextField
-                        label="Description"
-                        variant="outlined"
-                        fullWidth={true}
-                        value={collectionDescription}
-                        onChange={(e) => setCollectionDescription(e.target.value)}
-                      />
-                    </Grid>
-                  </Grid>
-                </form>
                 {[...selectedChunks].map((chunk) => (
                   <motion.div
                     key={chunk}
@@ -468,8 +530,42 @@ const ChunksPicker = ({ entryFile, className }) => {
         autoHideDuration={2000}
         onClose={hideSnackbar}
         TransitionComponent={SlideTransition}
-        message={`${selectedChunks.size} chunks copied`}
+        message={snackBarMessage.current}
       />
+      <Dialog
+        fullWidth={true}
+        open={isDialog}
+        onClose={() => {
+          setIsDialog(false);
+        }}
+      >
+        <DialogTitle>Save Collection</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Name"
+            error={emptyNameError}
+            value={collectionName}
+            onChange={(e) => setCollectionName(e.target.value)}
+            variant="outlined"
+            fullWidth={true}
+            required
+            margin="normal"
+          />
+          <TextField
+            label="Description"
+            variant="outlined"
+            fullWidth={true}
+            value={collectionDescription}
+            onChange={(e) => setCollectionDescription(e.target.value)}
+            margin="normal"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSaveCollection} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   ) : (
     <></>

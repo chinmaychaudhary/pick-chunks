@@ -6,17 +6,15 @@ export const useFetch = (url) => {
 
   useEffect(() => {
     setState((state) => ({ data: state.data, loading: true }));
-    const fetchData = () => {
-      fetch(url)
-        .then((res) => res.json())
-        .then((res) => {
-          if (isCurrent.current) {
-            setState({ data: res, loading: false });
-          }
-        })
-        .catch((err) => console.log(err));
-    };
-    fetchData();
+    fetch(url)
+      .then((res) => res.json())
+      .then((res) => {
+        if (isCurrent.current) {
+          setState({ data: res, loading: false });
+        }
+      })
+      .catch((err) => console.log(err));
+
     return () => {
       isCurrent.current = false;
     };

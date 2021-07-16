@@ -76,6 +76,7 @@ const addCollection = (configPath: string, collection: { name: string; descripti
 
   const currentCollections = getCollections(configPath);
   const currentCollectionNames = currentCollections.map((currCollection) => currCollection.name);
+  // Assuming name of the collection as unique identifier
   if (currentCollectionNames.includes(collection.name)) {
     updateCollection(configPath, collection);
     return;
@@ -122,6 +123,10 @@ const addCollection = (configPath: string, collection: { name: string; descripti
 };
 
 const getCollections = (configPath: string) => {
+  if (!existsSync(configPath)) {
+    return [];
+  }
+
   const sourceCode = readFileSync(configPath).toString();
   const ast = parser.parse(sourceCode, {
     sourceType: 'module',
@@ -147,7 +152,7 @@ const getCollections = (configPath: string) => {
 
       if (collectionProperty.length === 1) {
         if (!t.isArrayExpression(collectionProperty[0].value)) {
-          throw Error('Collections value should be array');
+          throw Error('Collections value should be an array');
         }
         collections = collectionProperty[0].value.elements.map((collectionNode: any) => {
           const collection: any = {};

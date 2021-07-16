@@ -11,7 +11,6 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import { EntryFilePicker } from '../components/EntryFilePicker';
 import { ChunksPicker } from '../components/ChunksPicker';
-import { useFetch } from '../components/customHooks/useFetch';
 import Layout from '../components/Layout';
 
 const useStyles = makeStyles((theme) => ({
@@ -72,27 +71,6 @@ const relativePath = (path: string, directory: string | any[]) => {
 function Add() {
   const classes = useStyles();
 
-  const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
-  const [allFiles, setAllFiles] = useState([] as any);
-
-  const { data: dataReceived, loading: dataLoading } = useFetch('/api/files');
-
-  useEffect(() => {
-    if (dataReceived != null) {
-      var files: { filepath: any; name: string }[] = [];
-      (dataReceived as any).files.forEach((item: any) => {
-        const relPath = relativePath(item, (dataReceived as any)?.directory);
-        files.push({
-          filepath: item,
-          name: relPath,
-        });
-      });
-      setAllFiles(files);
-      setEntryFile(files[0]);
-      // setLoading(false);
-    }
-  }, [dataReceived]);
-
   const btnRef = useRef(null);
   const [showPopover, setPopoverVisibility] = useState(false);
   const handleShortcutClick = useCallback(() => {
@@ -102,6 +80,41 @@ function Add() {
     setPopoverVisibility(false);
   }, []);
 
+  const [allFilesNew, setallFilesNew] = useState([] as any); // equivalent of all files
+  const [entryFileNew, setentryFileNew] = useState({ filepath: '', name: '' }); // equivalent to entryfile
+  const [dataLoadingNew, setdataLoadingNew] = useState(true); // equivalent to loading
+  const [storedFiles, setStoredFiles] = useLocalStorage('files', []);
+  useEffect(() => {
+    const fetchData = () => {
+      setdataLoadingNew(true);
+      fetch('api/files')
+        .then((res) => res.json())
+        .then((dataReceived) => {
+          if (dataReceived) {
+            var files: { filepath: any; name: string }[] = [];
+            (dataReceived as any).files.forEach((item: any) => {
+              const relPath = relativePath(item, (dataReceived as any)?.directory);
+              files.push({
+                filepath: item,
+                name: relPath,
+              });
+            });
+            setallFilesNew(files); // fetched data stored in state
+            setStoredFiles(files); // fetched data stored in localstorage
+            setentryFileNew(files[0]);
+            setdataLoadingNew(false);
+          }
+        });
+    };
+    if (!storedFiles.length) {
+      fetchData();
+    } else {
+      setallFilesNew(storedFiles); // localstorage data stored in state
+      setentryFileNew(storedFiles[0]); // set entry file to first file
+      setdataLoadingNew(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <Box>
       <Layout>
@@ -155,7 +168,7 @@ function Add() {
               </List>
             </Popover>
           </div>
-          {dataLoading ? (
+          {dataLoadingNew ? (
             <Typography component="div" variant="h4">
               <Skeleton />
             </Typography>
@@ -163,17 +176,42 @@ function Add() {
             <>
               <EntryFilePicker
                 className={classes.flexNone}
-                entryFile={entryFile}
-                onEntryFileChange={setEntryFile}
-                allFiles={allFiles}
+                entryFile={entryFileNew}
+                onEntryFileChange={setentryFileNew}
+                allFiles={allFilesNew}
               />
-              <ChunksPicker className={classes.flex1} entryFile={entryFile} />
+              <ChunksPicker className={classes.flex1} entryFile={entryFileNew} />
             </>
           )}
         </Box>
       </Layout>
     </Box>
   );
+}
+
+function useLocalStorage(key: string, initialValue: string[]) {
+  const [storedValue, setStoredValue] = useState(() => {
+    if (typeof window === 'undefined') {
+      return initialValue;
+    }
+    try {
+      const item = window.sessionStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.log(error);
+      return initialValue;
+    }
+  });
+  const setValue = (value: any) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.sessionStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  return [storedValue, setValue];
 }
 
 export default Add;

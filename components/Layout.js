@@ -1,5 +1,8 @@
+import React, { useState } from 'react';
+
+import { useRouter } from 'next/router';
+
 import { makeStyles } from '@material-ui/core/styles';
-import React from 'react';
 import Box from '@material-ui/core/Box';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
@@ -13,9 +16,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import PageIcon from '@material-ui/icons/ChevronRightOutlined';
 import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
-import { useState } from 'react';
+
 import { Logo } from './icons/Logo';
-import { useRouter } from 'next/router';
 import { useFetch } from './customHooks/useFetch';
 
 const useStyles = makeStyles((theme) => ({
@@ -49,7 +51,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const routesToName = {
-  '/': 'Create New Collection',
+  '/': 'Selecter',
   '/dashboard': 'Collections',
 };
 
@@ -58,9 +60,11 @@ const Layout = ({ children }) => {
   const router = useRouter();
   const [selectedlink, setSelectedLink] = useState(router.pathname);
   const [isDialog, setIsDialog] = useState(false);
+  // used to fetch the version which is shown in about tab
   const { data: version, loading: isVersionLoading } = useFetch('/version');
 
   const handleLinkSelect = (e, value) => {
+    // if value is in routesName and its not current pathname ,then only switch to that route
     if (Object.keys(routesToName).includes(value)) {
       if (value !== selectedlink) {
         router.push(value);
@@ -73,7 +77,6 @@ const Layout = ({ children }) => {
     }
   };
 
-  console.log(version);
   return (
     <Box display="flex" flexDirection="row">
       <div className={classes.drawer}>
@@ -127,6 +130,7 @@ const Layout = ({ children }) => {
         <DialogContent>
           <DialogContentText>Version: {isVersionLoading ? '...' : version.version}</DialogContentText>
           <DialogContentText>
+            {/*Opens the pick-chunks github repository in new window page as target is "_blank" */}
             <Link href="https://github.com/chicho17/pick-chunks" target="_blank">
               Github Respository
             </Link>

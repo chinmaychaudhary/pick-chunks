@@ -2,7 +2,6 @@ components/*
 test/*
 hooks/*
 node_modules
-public/*
 pages/*
 .next/cache/*
 styles
