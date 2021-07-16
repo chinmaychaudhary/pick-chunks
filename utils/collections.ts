@@ -76,6 +76,7 @@ const addCollection = (configPath: string, collection: { name: string; descripti
 
   const currentCollections = getCollections(configPath);
   const currentCollectionNames = currentCollections.map((currCollection) => currCollection.name);
+  // Assuming name of the collection as unique identifier
   if (currentCollectionNames.includes(collection.name)) {
     updateCollection(configPath, collection);
     return;
