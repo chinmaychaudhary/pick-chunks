@@ -84,7 +84,6 @@ function Add() {
   const [entryFileNew, setentryFileNew] = useState({ filepath: '', name: '' }); // equivalent to entryfile
   const [dataLoadingNew, setdataLoadingNew] = useState(true); // equivalent to loading
   const [storedFiles, setStoredFiles] = useLocalStorage('files', []);
-  //console.log('STOREDfiles', storedFiles);
   useEffect(() => {
     const fetchData = () => {
       setdataLoadingNew(true);
