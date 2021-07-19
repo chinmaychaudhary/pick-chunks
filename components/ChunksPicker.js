@@ -337,6 +337,9 @@ const ChunksPicker = ({ entryFile, className }) => {
   };
 
   const [collectionName, setCollectionName] = useState(entryFile?.name);
+  useEffect(() => {
+    setCollectionName(entryFile?.name);
+  }, [entryFile?.name]);
   const [collectionDescription, setCollectionDescription] = useState('');
   const [isChildrenChunks, setIsChildrenChunks] = useState(false);
   useEffect(() => {
