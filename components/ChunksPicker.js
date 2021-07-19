@@ -60,23 +60,27 @@ function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
 }
 
+const createPostReqOptions = (obj) => {
+  return {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(obj),
+  };
+};
 const ChunksPicker = ({ entryFile, className }) => {
   const classes = useStyles();
   // loads all descendent chunks
   const loadAllDescendantChunks = useCallback(
     (filepath) =>
       new Promise((resolve, reject) => {
-        fetch('api/chunks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: filepath }),
-        })
+        fetch('api/chunks', createPostReqOptions({ path: filepath }))
           .then((res) => {
             return res.json();
           })
           .then((res) => {
             const chunks = res.chunks;
             const chunkNames = chunks.map((chunk) => chunk.chunkName);
+            console.log(chunkNames);
             resolve(chunkNames);
           })
           .catch((err) => reject(err));
@@ -107,12 +111,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     if (!path) return;
     setChildrenChunks([]);
     setIsLoadingChunks(true);
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: path }),
-    };
-    fetch('/api/chunks', requestOptions)
+    fetch('/api/chunks', createPostReqOptions({ path: path }))
       .then((response) => response.json())
       .then((data) => {
         const chunkWithName = data.chunks;
@@ -325,12 +324,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       description: collectionDescription,
       chunks: [...selectedChunks],
     };
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(collectionData),
-    };
-    fetch('/api/collection/add', requestOptions)
+    fetch('/api/collection/add', createPostReqOptions(collectionData))
       .then(() => {
         snackBarMessage.current = `Collection saved !`;
         setSnackbarVisibility(true);
