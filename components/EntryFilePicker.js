@@ -9,7 +9,6 @@ const EMPTY_ARRAY = [];
 
 export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFiles }) {
   const [searchKeyword, setSearchKeyword] = useState(entryFile?.filepath || '');
-  const data = allFiles;
   const [open, setOpen] = React.useState(false);
   const defaultFilterFiles = createFilterOptions();
 
@@ -18,7 +17,7 @@ export function EntryFilePicker({ entryFile, onEntryFileChange, className, allFi
       <Autocomplete
         style={{ width: '100%' }}
         value={entryFile}
-        options={data || EMPTY_ARRAY}
+        options={allFiles || EMPTY_ARRAY}
         open={open}
         onOpen={() => {
           setOpen(true);
