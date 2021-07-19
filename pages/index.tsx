@@ -82,7 +82,6 @@ function Add() {
     setPopoverVisibility(false);
   }, []);
 
-  //const [allFiles, setAllFiles] = useState([] as any);
   const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
   const [dataLoading, setDataLoading] = useState(true);
   const [storedFiles, setStoredFiles] = useLocalStorage('files', []);
@@ -101,14 +100,12 @@ function Add() {
                 name: relPath,
               });
             });
-            //setAllFiles(files); // fetched data stored in state
             setStoredFiles(files); // fetched data stored in localstorage
             setEntryFile(files[0]);
             setDataLoading(false);
           }
         });
     } else {
-      //setAllFiles(storedFiles); // localstorage data stored in state
       setEntryFile(storedFiles[0]); // set entry file to first file
       setDataLoading(false);
     }
