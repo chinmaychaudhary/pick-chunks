@@ -69,7 +69,7 @@ const ChunksPicker = ({ entryFile, className }) => {
         fetch('api/chunks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: filepath }),
+          body: JSON.stringify({ path: filepath, getDescendant: true }),
         })
           .then((res) => {
             return res.json();
