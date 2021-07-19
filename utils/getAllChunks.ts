@@ -10,7 +10,7 @@ export const clearStore = () => {
   store = {};
 };
 
-export const getAllChunks = (path: string, root: string): Record<string, any> => {
+export const getAllChunks = (path: string, root: string, getDescendant: boolean = false): Record<string, any> => {
   path = resolve(root, path);
 
   // path is considered cyclic as it is visited but not completed execution
@@ -82,6 +82,8 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
   });
 
   const chunks = new Map();
+  const children: any = [];
+
   dynamicImports.forEach((chunk) => {
     let chunkPath: any = chunk;
     for (const extension of extensions) {
@@ -102,20 +104,26 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
 
       if (isRelative) {
         chunks.set(pathToChunk, dynamicImportsChunkNames[chunk as string] || relative(root, pathToChunk));
+
+        if (getDescendant) {
+          children.push(getAllChunks(pathToChunk, root, getDescendant));
+        }
       } else if (isFromRoot) {
         chunks.set(
           pathToChunkWithRoot,
           dynamicImportsChunkNames[chunk as string] || relative(root, pathToChunkWithRoot)
         );
+
+        if (getDescendant) {
+          children.push(getAllChunks(pathToChunkWithRoot, root, getDescendant));
+        }
       }
     }
   });
 
   dynamicImports.clear();
 
-  const children: any = [];
-
-  // Traverse children of current path, Assuming dynamic imports are not children
+  // Traverse children of current path
   for (const staticImport of staticImports) {
     let staticImportPath = staticImport;
     for (const extension of extensions) {
@@ -135,9 +143,9 @@ export const getAllChunks = (path: string, root: string): Record<string, any> =>
       }
 
       if (isRelative) {
-        children.push(getAllChunks(pathToImport, root));
+        children.push(getAllChunks(pathToImport, root, getDescendant));
       } else if (isFromRoot) {
-        children.push(getAllChunks(pathToImportWithRoot, root));
+        children.push(getAllChunks(pathToImportWithRoot, root, getDescendant));
       }
     }
   }

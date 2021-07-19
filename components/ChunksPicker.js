@@ -70,7 +70,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   const loadAllDescendantChunks = useCallback(
     (filepath) =>
       new Promise((resolve, reject) => {
-        fetch('api/chunks', createPostReqOptions({ path: filepath }))
+        fetch('api/chunks', createPostReqOptions({ path: filepath, getDescendant: true }))
           .then((res) => {
             return res.json();
           })
