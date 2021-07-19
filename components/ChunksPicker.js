@@ -39,9 +39,6 @@ const useStyles = makeStyles((theme) => ({
   container: {
     pointerEvents: (props) => (props.disabled ? 'none' : 'all'),
   },
-  output: {
-    display: 'flex',
-  },
   listRoot: {
     backgroundColor: theme.palette.background.paper,
     flex: '0 0 35%',
@@ -319,6 +316,9 @@ const ChunksPicker = ({ entryFile, className }) => {
   // HANDLE SAVE COLLECTION STARTS FROM HERE
   const handleSaveCollection = (e) => {
     e.preventDefault();
+    if (!collectionName) {
+      return;
+    }
     const collectionData = {
       name: collectionName,
       description: collectionDescription,
@@ -336,8 +336,7 @@ const ChunksPicker = ({ entryFile, className }) => {
       });
   };
 
-  const [collectionName, setCollectionName] = useState('');
-  const [emptyNameError, setEmptyNameError] = useState(false);
+  const [collectionName, setCollectionName] = useState(entryFile?.name);
   const [collectionDescription, setCollectionDescription] = useState('');
   const [isChildrenChunks, setIsChildrenChunks] = useState(false);
   useEffect(() => {
@@ -537,7 +536,7 @@ const ChunksPicker = ({ entryFile, className }) => {
         <DialogContent>
           <TextField
             label="Name"
-            error={emptyNameError}
+            error={!collectionName}
             value={collectionName}
             onChange={(e) => setCollectionName(e.target.value)}
             variant="outlined"
