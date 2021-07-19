@@ -4,6 +4,11 @@ import generate from '@babel/generator';
 import * as t from '@babel/types';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 
+/**
+ * Creates AST subtree for a chunk collection
+ * @param collection object representing chunk collection
+ * @returns object expression node for chunk collection
+ */
 const createCollection = (collection: { name: string; description: string; chunks: string[] }) => {
   const { name, description, chunks } = collection;
   const nameProperty = t.objectProperty(t.identifier('name'), t.stringLiteral(name));
@@ -19,6 +24,12 @@ const createCollection = (collection: { name: string; description: string; chunk
   return t.objectExpression([nameProperty, descriptionProperty, chunksProperty]);
 };
 
+/**
+ * Updates a particular chunk collection in configuration file
+ * Assumes, name as key for updation.
+ * @param configPath path to the configuration of the user
+ * @param collection object with the new value for the given collection
+ */
 const updateCollection = (configPath: string, collection: { name: string; description: string; chunks: string[] }) => {
   const sourceCode = readFileSync(configPath).toString();
   const ast = parser.parse(sourceCode, {
@@ -69,6 +80,12 @@ const updateCollection = (configPath: string, collection: { name: string; descri
   writeFileSync(configPath, transformedCode);
 };
 
+/**
+ * Adds a new collection to the configuration file.
+ * If collection with given name exists, it updates the collection in configuration itself.
+ * @param configPath path to the configuration file
+ * @param collection object representing a chunk collection
+ */
 const addCollection = (configPath: string, collection: { name: string; description: string; chunks: string[] }) => {
   if (!existsSync(configPath)) {
     writeFileSync(configPath, `module.exports = {}`);
@@ -122,6 +139,11 @@ const addCollection = (configPath: string, collection: { name: string; descripti
   writeFileSync(configPath, transformedCode);
 };
 
+/**
+ * Lists all collections stored in configuration file
+ * @param configPath path to the configuration file
+ * @returns all chunk collections in the configuration file
+ */
 const getCollections = (configPath: string) => {
   if (!existsSync(configPath)) {
     return [];
