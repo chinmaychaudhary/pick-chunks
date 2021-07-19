@@ -1,5 +1,6 @@
 import * as parser from '@babel/parser';
 import traverse from '@babel/traverse';
+import { File } from '@babel/types';
 import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname, relative } from 'path';
 
@@ -30,9 +31,6 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
   store[path] = null;
 
   const cwd = dirname(path);
-  const staticImports: string[] = [];
-  const dynamicImports = new Set();
-  const dynamicImportsChunkNames: any = {};
 
   const code = readFileSync(path).toString();
   const ast = parser.parse(code, {
@@ -40,46 +38,7 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
     plugins: ['jsx', 'typescript', 'classProperties', 'exportDefaultFrom'],
   });
 
-  traverse(ast, {
-    ImportDeclaration(path: any) {
-      staticImports.push(path.node.source.value);
-    },
-    CallExpression(path: any) {
-      if (path.node.callee.type === 'Import') {
-        const comments = path.node.arguments[0].leadingComments;
-        const filePath = path.node.arguments[0].value;
-
-        if (!filePath) {
-          return;
-        }
-
-        if (comments) {
-          for (const comment of comments) {
-            const chunkNameComment = comment.value.replace("'", '"');
-            if (chunkNameComment.includes('webpackChunkName')) {
-              // Assuming webpackChunkName comment to be of format /* webpackChunkName: "name" */
-              dynamicImportsChunkNames[filePath] = chunkNameComment.split('"')[1];
-              dynamicImports.add(filePath);
-              return;
-            }
-          }
-        }
-
-        dynamicImportsChunkNames[filePath] = undefined;
-        dynamicImports.add(filePath);
-      }
-    },
-    ExportNamedDeclaration(path: any) {
-      if (!!path.node.source) {
-        staticImports.push(path.node.source.value);
-      }
-    },
-    ExportAllDeclaration(path: any) {
-      if (!!path.node.source) {
-        staticImports.push(path.node.source.value);
-      }
-    },
-  });
+  const { staticImports, dynamicImports, chunkNameToPath } = getImports(ast);
 
   const chunks = new Map();
   const children: any = [];
@@ -103,16 +62,13 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
       }
 
       if (isRelative) {
-        chunks.set(pathToChunk, dynamicImportsChunkNames[chunk as string] || relative(root, pathToChunk));
+        chunks.set(pathToChunk, chunkNameToPath[chunk as string] || relative(root, pathToChunk));
 
         if (getDescendant) {
           children.push(getAllChunks(pathToChunk, root, getDescendant));
         }
       } else if (isFromRoot) {
-        chunks.set(
-          pathToChunkWithRoot,
-          dynamicImportsChunkNames[chunk as string] || relative(root, pathToChunkWithRoot)
-        );
+        chunks.set(pathToChunkWithRoot, chunkNameToPath[chunk as string] || relative(root, pathToChunkWithRoot));
 
         if (getDescendant) {
           children.push(getAllChunks(pathToChunkWithRoot, root, getDescendant));
@@ -167,4 +123,57 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
       resolve(store[path]);
     });
   });
+};
+
+const getImports = (ast: File) => {
+  const staticImports: string[] = [];
+  const dynamicImports = new Set();
+  const chunkNameToPath: any = {};
+
+  traverse(ast, {
+    ImportDeclaration(path: any) {
+      staticImports.push(path.node.source.value);
+    },
+    CallExpression(path: any) {
+      if (path.node.callee.type === 'Import') {
+        const comments = path.node.arguments[0].leadingComments;
+        const filePath = path.node.arguments[0].value;
+
+        if (!filePath) {
+          return;
+        }
+
+        if (comments) {
+          for (const comment of comments) {
+            const chunkNameComment = comment.value.replace("'", '"');
+            if (chunkNameComment.includes('webpackChunkName')) {
+              // Assuming webpackChunkName comment to be of format /* webpackChunkName: "name" */
+              chunkNameToPath[filePath] = chunkNameComment.split('"')[1];
+              dynamicImports.add(filePath);
+              return;
+            }
+          }
+        }
+
+        chunkNameToPath[filePath] = undefined;
+        dynamicImports.add(filePath);
+      }
+    },
+    ExportNamedDeclaration(path: any) {
+      if (!!path.node.source) {
+        staticImports.push(path.node.source.value);
+      }
+    },
+    ExportAllDeclaration(path: any) {
+      if (!!path.node.source) {
+        staticImports.push(path.node.source.value);
+      }
+    },
+  });
+
+  return {
+    staticImports,
+    dynamicImports,
+    chunkNameToPath,
+  };
 };
