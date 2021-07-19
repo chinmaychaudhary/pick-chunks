@@ -77,7 +77,6 @@ const ChunksPicker = ({ entryFile, className }) => {
           .then((res) => {
             const chunks = res.chunks;
             const chunkNames = chunks.map((chunk) => chunk.chunkName);
-            console.log(chunkNames);
             resolve(chunkNames);
           })
           .catch((err) => reject(err));
@@ -116,9 +115,7 @@ const ChunksPicker = ({ entryFile, className }) => {
     if (parsedChunksObject?.cached) {
       setChildrenChunks(parsedChunksObject.chunks);
       setIsLoadingChunks(false);
-      console.log('Yeeeeeeeesssssssssss');
     } else {
-      console.log('Noooooooooooooooooooooooooooo');
       fetch('/api/chunks', createPostReqOptions({ path: path }))
         .then((response) => response.json())
         .then((data) => {
