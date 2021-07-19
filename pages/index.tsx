@@ -82,13 +82,13 @@ function Add() {
     setPopoverVisibility(false);
   }, []);
 
-  const [allFiles, setallFiles] = useState([] as any);
-  const [entryFile, setentryFile] = useState({ filepath: '', name: '' });
-  const [dataLoading, setdataLoading] = useState(true);
+  const [allFiles, setAllFiles] = useState([] as any);
+  const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
+  const [dataLoading, setDataLoading] = useState(true);
   const [storedFiles, setStoredFiles] = useLocalStorage('files', []);
   useEffect(() => {
     if (!storedFiles.length) {
-      setdataLoading(true);
+      setDataLoading(true);
       fetch('api/files')
         .then((res) => res.json())
         .then((dataReceived) => {
@@ -101,16 +101,16 @@ function Add() {
                 name: relPath,
               });
             });
-            setallFiles(files); // fetched data stored in state
+            setAllFiles(files); // fetched data stored in state
             setStoredFiles(files); // fetched data stored in localstorage
-            setentryFile(files[0]);
-            setdataLoading(false);
+            setEntryFile(files[0]);
+            setDataLoading(false);
           }
         });
     } else {
-      setallFiles(storedFiles); // localstorage data stored in state
-      setentryFile(storedFiles[0]); // set entry file to first file
-      setdataLoading(false);
+      setAllFiles(storedFiles); // localstorage data stored in state
+      setEntryFile(storedFiles[0]); // set entry file to first file
+      setDataLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -177,7 +177,7 @@ function Add() {
               <EntryFilePicker
                 className={classes.flexNone}
                 entryFile={entryFile}
-                onEntryFileChange={setentryFile}
+                onEntryFileChange={setEntryFile}
                 allFiles={allFiles}
               />
               <ChunksPicker className={classes.flex1} entryFile={entryFile} />
