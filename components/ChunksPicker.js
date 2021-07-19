@@ -103,19 +103,35 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [childrenChunks, setChildrenChunks] = useState(null);
   // isLoading is used to handle empty state of chunks
   const [isLoadingChunks, setIsLoadingChunks] = useState(false);
+
   useEffect(() => {
     const path = crumbs[crumbs.length - 1].filepath;
     if (!path) return;
     setChildrenChunks([]);
     setIsLoadingChunks(true);
-    fetch('/api/chunks', createPostReqOptions({ path: path }))
-      .then((response) => response.json())
-      .then((data) => {
-        const chunkWithName = data.chunks;
-        setChildrenChunks(chunkWithName);
-        setIsLoadingChunks(false);
-      })
-      .catch((err) => alert(err));
+    // Assumption: used path as key to store the fetched data from API, assuming path is unique for every file as it is
+    // use local storage to fetch the data with that path, if its there in localstorage use that , else fetch it and store it.
+    const chunksObject = window.sessionStorage.getItem(path);
+    const parsedChunksObject = chunksObject ? JSON.parse(chunksObject) : [];
+    if (parsedChunksObject?.cached) {
+      setChildrenChunks(parsedChunksObject.chunks);
+      setIsLoadingChunks(false);
+      console.log('Yeeeeeeeesssssssssss');
+    } else {
+      console.log('Noooooooooooooooooooooooooooo');
+      fetch('/api/chunks', createPostReqOptions({ path: path }))
+        .then((response) => response.json())
+        .then((data) => {
+          const chunkWithName = data.chunks;
+          setChildrenChunks(chunkWithName);
+          setIsLoadingChunks(false);
+          // chunkWithName is array of {chunkName,filePath}
+          const updatedChunksData = { chunks: chunkWithName, cached: true };
+          // save this to local storage
+          window.sessionStorage.setItem(path, JSON.stringify(updatedChunksData));
+        })
+        .catch((err) => alert(err));
+    }
   }, [crumbs]);
 
   // processing is used to handle subgraph add and remove's loading state
