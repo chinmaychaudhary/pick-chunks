@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
+
 import Popover from '@material-ui/core/Popover';
 import IconButton from '@material-ui/core/IconButton';
 import KeyboardOutlinedIcon from '@material-ui/icons/KeyboardOutlined';
@@ -9,6 +10,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+
 import { EntryFilePicker } from '../components/EntryFilePicker';
 import { ChunksPicker } from '../components/ChunksPicker';
 import Layout from '../components/Layout';
@@ -80,13 +82,13 @@ function Add() {
     setPopoverVisibility(false);
   }, []);
 
-  const [allFilesNew, setallFilesNew] = useState([] as any); // equivalent of all files
-  const [entryFileNew, setentryFileNew] = useState({ filepath: '', name: '' }); // equivalent to entryfile
-  const [dataLoadingNew, setdataLoadingNew] = useState(true); // equivalent to loading
+  const [allFiles, setallFiles] = useState([] as any);
+  const [entryFile, setentryFile] = useState({ filepath: '', name: '' });
+  const [dataLoading, setdataLoading] = useState(true);
   const [storedFiles, setStoredFiles] = useLocalStorage('files', []);
   useEffect(() => {
-    const fetchData = () => {
-      setdataLoadingNew(true);
+    if (!storedFiles.length) {
+      setdataLoading(true);
       fetch('api/files')
         .then((res) => res.json())
         .then((dataReceived) => {
@@ -99,22 +101,20 @@ function Add() {
                 name: relPath,
               });
             });
-            setallFilesNew(files); // fetched data stored in state
+            setallFiles(files); // fetched data stored in state
             setStoredFiles(files); // fetched data stored in localstorage
-            setentryFileNew(files[0]);
-            setdataLoadingNew(false);
+            setentryFile(files[0]);
+            setdataLoading(false);
           }
         });
-    };
-    if (!storedFiles.length) {
-      fetchData();
     } else {
-      setallFilesNew(storedFiles); // localstorage data stored in state
-      setentryFileNew(storedFiles[0]); // set entry file to first file
-      setdataLoadingNew(false);
+      setallFiles(storedFiles); // localstorage data stored in state
+      setentryFile(storedFiles[0]); // set entry file to first file
+      setdataLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   return (
     <Box>
       <Layout>
@@ -168,7 +168,7 @@ function Add() {
               </List>
             </Popover>
           </div>
-          {dataLoadingNew ? (
+          {dataLoading ? (
             <Typography component="div" variant="h4">
               <Skeleton />
             </Typography>
@@ -176,11 +176,11 @@ function Add() {
             <>
               <EntryFilePicker
                 className={classes.flexNone}
-                entryFile={entryFileNew}
-                onEntryFileChange={setentryFileNew}
-                allFiles={allFilesNew}
+                entryFile={entryFile}
+                onEntryFileChange={setentryFile}
+                allFiles={allFiles}
               />
-              <ChunksPicker className={classes.flex1} entryFile={entryFileNew} />
+              <ChunksPicker className={classes.flex1} entryFile={entryFile} />
             </>
           )}
         </Box>
@@ -188,7 +188,9 @@ function Add() {
     </Box>
   );
 }
-
+// Sync state to local storage so that it persists through a page refresh.
+// Usage is similar to useState except we pass in a local storage key so that
+// we can default to that value on page load instead of the specified initial value.
 function useLocalStorage(key: string, initialValue: string[]) {
   const [storedValue, setStoredValue] = useState(() => {
     if (typeof window === 'undefined') {
