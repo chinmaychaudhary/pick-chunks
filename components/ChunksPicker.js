@@ -105,28 +105,14 @@ const ChunksPicker = ({ entryFile, className }) => {
     const path = crumbs[crumbs.length - 1].filepath;
     if (!path) return;
     setIsLoadingChunks(true);
-    // Assumption: used path as key to store the fetched data from API, assuming path is unique for every file as it is
-    // use local storage to fetch the data with that path, if its there in localstorage use that , else fetch it and store it.
-    const chunksObject = window.sessionStorage.getItem(CHUNKS);
-    const parsedChunksObject = chunksObject ? JSON.parse(chunksObject) : [];
-    // use filter to check whether current path is there or not in locastorage
-    const filteredObjects = parsedChunksObject.filter((obj) => obj.path === path);
-    if (!filteredObjects.length) {
-      fetch('/api/chunks', createPostReqOptions({ path: path }))
-        .then((response) => response.json())
-        .then((data) => {
-          const chunkWithName = data.chunks;
-          setChildrenChunks(chunkWithName);
-          setIsLoadingChunks(false);
-          // chunkWithName is array of {chunkName,filePath}
-          const updatedChunksData = [...parsedChunksObject, { path: path, chunks: chunkWithName }];
-          window.sessionStorage.setItem(CHUNKS, JSON.stringify(updatedChunksData));
-        })
-        .catch((err) => alert(err));
-    } else {
-      setChildrenChunks(filteredObjects[0].chunks);
-      setIsLoadingChunks(false);
-    }
+    fetch('/api/chunks', createPostReqOptions({ path: path }))
+      .then((response) => response.json())
+      .then((data) => {
+        const chunkWithName = data.chunks;
+        setChildrenChunks(chunkWithName);
+        setIsLoadingChunks(false);
+      })
+      .catch((err) => alert(err));
   }, [crumbs]);
 
   // processing is used to handle subgraph add and remove's loading state
