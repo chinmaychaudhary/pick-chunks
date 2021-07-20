@@ -26,21 +26,14 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
 import { HomeOutlined } from '@material-ui/icons';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import { Button } from '@material-ui/core';
 
+import SaveCollectionForm from '../components/SaveCollectionForm';
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
     cursor: (props) => (props.disabled ? 'not-allowed' : 'default'),
   },
   container: {
     pointerEvents: (props) => (props.disabled ? 'none' : 'all'),
-  },
-  output: {
-    display: 'flex',
   },
   listRoot: {
     backgroundColor: theme.palette.background.paper,
@@ -55,22 +48,27 @@ const useStyles = makeStyles((theme) => ({
   },
   chipRoot: theme.typography.subtitle1,
 }));
+// KEYS for localstorage
+const CHUNKS = 'chunks';
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
 }
 
+const createPostReqOptions = (obj) => {
+  return {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(obj),
+  };
+};
 const ChunksPicker = ({ entryFile, className }) => {
   const classes = useStyles();
   // loads all descendent chunks
   const loadAllDescendantChunks = useCallback(
     (filepath) =>
       new Promise((resolve, reject) => {
-        fetch('api/chunks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: filepath, getDescendant: true }),
-        })
+        fetch('api/chunks', createPostReqOptions({ path: filepath, getDescendant: true }))
           .then((res) => {
             return res.json();
           })
@@ -85,9 +83,9 @@ const ChunksPicker = ({ entryFile, className }) => {
   );
   // assumption: EntryFile is descided from api/files which has only filename as a parameter, so
   // the initial crumb which is entry file in pick entry, has chunkName set to its relative filepath.
-  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.name, chunkName: entryFile?.name }]);
+  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.filepath, chunkName: entryFile?.name }]);
   useEffect(() => {
-    setCrumbs([{ filepath: entryFile?.name, chunkName: entryFile?.name }]);
+    setCrumbs([{ filepath: entryFile?.filepath, chunkName: entryFile?.name }]);
     setKeyword('');
   }, [entryFile]);
 
@@ -102,24 +100,33 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [childrenChunks, setChildrenChunks] = useState(null);
   // isLoading is used to handle empty state of chunks
   const [isLoadingChunks, setIsLoadingChunks] = useState(false);
+
   useEffect(() => {
     const path = crumbs[crumbs.length - 1].filepath;
     if (!path) return;
-    setChildrenChunks([]);
     setIsLoadingChunks(true);
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: path }),
-    };
-    fetch('/api/chunks', requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        const chunkWithName = data.chunks;
-        setChildrenChunks(chunkWithName);
-        setIsLoadingChunks(false);
-      })
-      .catch((err) => alert(err));
+    // Assumption: used path as key to store the fetched data from API, assuming path is unique for every file as it is
+    // use local storage to fetch the data with that path, if its there in localstorage use that , else fetch it and store it.
+    const chunksObject = window.sessionStorage.getItem(CHUNKS);
+    const parsedChunksObject = chunksObject ? JSON.parse(chunksObject) : [];
+    // use filter to check whether current path is there or not in locastorage
+    const filteredObjects = parsedChunksObject.filter((obj) => obj.path === path);
+    if (!filteredObjects.length) {
+      fetch('/api/chunks', createPostReqOptions({ path: path }))
+        .then((response) => response.json())
+        .then((data) => {
+          const chunkWithName = data.chunks;
+          setChildrenChunks(chunkWithName);
+          setIsLoadingChunks(false);
+          // chunkWithName is array of {chunkName,filePath}
+          const updatedChunksData = [...parsedChunksObject, { path: path, chunks: chunkWithName }];
+          window.sessionStorage.setItem(CHUNKS, JSON.stringify(updatedChunksData));
+        })
+        .catch((err) => alert(err));
+    } else {
+      setChildrenChunks(filteredObjects[0].chunks);
+      setIsLoadingChunks(false);
+    }
   }, [crumbs]);
 
   // processing is used to handle subgraph add and remove's loading state
@@ -317,34 +324,6 @@ const ChunksPicker = ({ entryFile, className }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const windowData = useMemo(() => ({}), [selectedChunks, processing, filteredChunks]);
 
-  // HANDLE SAVE COLLECTION STARTS FROM HERE
-  const handleSaveCollection = (e) => {
-    e.preventDefault();
-    const collectionData = {
-      name: collectionName,
-      description: collectionDescription,
-      chunks: [...selectedChunks],
-    };
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(collectionData),
-    };
-    fetch('/api/collection/add', requestOptions)
-      .then(() => {
-        snackBarMessage.current = `Collection saved !`;
-        setSnackbarVisibility(true);
-        setIsDialog(false);
-      })
-      .catch((err) => {
-        snackBarMessage.current = `Unable to save the collection !`;
-        setSnackbarVisibility(true);
-      });
-  };
-
-  const [collectionName, setCollectionName] = useState('');
-  const [emptyNameError, setEmptyNameError] = useState(false);
-  const [collectionDescription, setCollectionDescription] = useState('');
   const [isChildrenChunks, setIsChildrenChunks] = useState(false);
   useEffect(() => {
     setIsChildrenChunks(childrenChunks != null && childrenChunks.length > 0);
@@ -532,40 +511,13 @@ const ChunksPicker = ({ entryFile, className }) => {
         TransitionComponent={SlideTransition}
         message={snackBarMessage.current}
       />
-      <Dialog
-        fullWidth={true}
-        open={isDialog}
-        onClose={() => {
-          setIsDialog(false);
-        }}
-      >
-        <DialogTitle>Save Collection</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Name"
-            error={emptyNameError}
-            value={collectionName}
-            onChange={(e) => setCollectionName(e.target.value)}
-            variant="outlined"
-            fullWidth={true}
-            required
-            margin="normal"
-          />
-          <TextField
-            label="Description"
-            variant="outlined"
-            fullWidth={true}
-            value={collectionDescription}
-            onChange={(e) => setCollectionDescription(e.target.value)}
-            margin="normal"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleSaveCollection} color="primary">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <SaveCollectionForm
+        isDialog={isDialog}
+        setIsDialog={setIsDialog}
+        selectedChunks={selectedChunks}
+        snackBarMessage={snackBarMessage}
+        setSnackbarVisibility={setSnackbarVisibility}
+      />
     </Box>
   ) : (
     <></>
