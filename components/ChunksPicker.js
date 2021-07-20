@@ -104,7 +104,6 @@ const ChunksPicker = ({ entryFile, className }) => {
   useEffect(() => {
     const path = crumbs[crumbs.length - 1].filepath;
     if (!path) return;
-    setChildrenChunks([]);
     setIsLoadingChunks(true);
     // Assumption: used path as key to store the fetched data from API, assuming path is unique for every file as it is
     // use local storage to fetch the data with that path, if its there in localstorage use that , else fetch it and store it.
