@@ -26,11 +26,6 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
 import { HomeOutlined } from '@material-ui/icons';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import { Button } from '@material-ui/core';
 
 import SaveCollectionForm from '../components/SaveCollectionForm';
 const useStyles = makeStyles((theme) => ({
@@ -53,6 +48,8 @@ const useStyles = makeStyles((theme) => ({
   },
   chipRoot: theme.typography.subtitle1,
 }));
+// KEYS for localstorage
+const CHUNKS = 'chunks';
 
 function SlideTransition(props) {
   return <Slide {...props} direction="left" />;
@@ -86,9 +83,9 @@ const ChunksPicker = ({ entryFile, className }) => {
   );
   // assumption: EntryFile is descided from api/files which has only filename as a parameter, so
   // the initial crumb which is entry file in pick entry, has chunkName set to its relative filepath.
-  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.name, chunkName: entryFile?.name }]);
+  const [crumbs, setCrumbs] = useState([{ filepath: entryFile?.filepath, chunkName: entryFile?.name }]);
   useEffect(() => {
-    setCrumbs([{ filepath: entryFile?.name, chunkName: entryFile?.name }]);
+    setCrumbs([{ filepath: entryFile?.filepath, chunkName: entryFile?.name }]);
     setKeyword('');
   }, [entryFile]);
 
@@ -111,12 +108,11 @@ const ChunksPicker = ({ entryFile, className }) => {
     setIsLoadingChunks(true);
     // Assumption: used path as key to store the fetched data from API, assuming path is unique for every file as it is
     // use local storage to fetch the data with that path, if its there in localstorage use that , else fetch it and store it.
-    const chunksObject = window.sessionStorage.getItem(path);
+    const chunksObject = window.sessionStorage.getItem(CHUNKS);
     const parsedChunksObject = chunksObject ? JSON.parse(chunksObject) : [];
-    if (parsedChunksObject?.cached) {
-      setChildrenChunks(parsedChunksObject.chunks);
-      setIsLoadingChunks(false);
-    } else {
+    // use filter to check whether current path is there or not in locastorage
+    const filteredObjects = parsedChunksObject.filter((obj) => obj.path === path);
+    if (!filteredObjects.length) {
       fetch('/api/chunks', createPostReqOptions({ path: path }))
         .then((response) => response.json())
         .then((data) => {
@@ -124,11 +120,13 @@ const ChunksPicker = ({ entryFile, className }) => {
           setChildrenChunks(chunkWithName);
           setIsLoadingChunks(false);
           // chunkWithName is array of {chunkName,filePath}
-          const updatedChunksData = { chunks: chunkWithName, cached: true };
-          // save this to local storage
-          window.sessionStorage.setItem(path, JSON.stringify(updatedChunksData));
+          const updatedChunksData = [...parsedChunksObject, { path: path, chunks: chunkWithName }];
+          window.sessionStorage.setItem(CHUNKS, JSON.stringify(updatedChunksData));
         })
         .catch((err) => alert(err));
+    } else {
+      setChildrenChunks(filteredObjects[0].chunks);
+      setIsLoadingChunks(false);
     }
   }, [crumbs]);
 
