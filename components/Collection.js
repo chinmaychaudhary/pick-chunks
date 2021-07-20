@@ -66,6 +66,9 @@ const Collection = ({ dataReceived }) => {
   };
 
   const getCollectionObject = (objects, name) => {
+    if (!objects.length) {
+      return {};
+    }
     const chosenCollectionObject = objects.find((object) => object.name === name);
     return chosenCollectionObject;
   };
