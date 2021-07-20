@@ -1,5 +1,5 @@
 import type { NextApiResponse } from 'next';
-import { getAllChunks, clearStore } from '../../utils/getAllChunks';
+import { getAllChunks } from '../../utils/getAllChunks';
 
 type Data = {
   directory: string;
