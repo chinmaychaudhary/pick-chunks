@@ -32,6 +32,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { Button } from '@material-ui/core';
 
+import SaveCollectionForm from '../components/SaveCollectionForm';
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
     cursor: (props) => (props.disabled ? 'not-allowed' : 'default'),
@@ -326,34 +327,6 @@ const ChunksPicker = ({ entryFile, className }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const windowData = useMemo(() => ({}), [selectedChunks, processing, filteredChunks]);
 
-  // HANDLE SAVE COLLECTION STARTS FROM HERE
-  const handleSaveCollection = (e) => {
-    e.preventDefault();
-    if (!collectionName) {
-      return;
-    }
-    const collectionData = {
-      name: collectionName,
-      description: collectionDescription,
-      chunks: [...selectedChunks],
-    };
-    fetch('/api/collection/add', createPostReqOptions(collectionData))
-      .then(() => {
-        snackBarMessage.current = `Collection saved !`;
-        setSnackbarVisibility(true);
-        setIsDialog(false);
-      })
-      .catch((err) => {
-        snackBarMessage.current = `Unable to save the collection !`;
-        setSnackbarVisibility(true);
-      });
-  };
-
-  const [collectionName, setCollectionName] = useState(entryFile?.name);
-  useEffect(() => {
-    setCollectionName(entryFile?.name);
-  }, [entryFile?.name]);
-  const [collectionDescription, setCollectionDescription] = useState('');
   const [isChildrenChunks, setIsChildrenChunks] = useState(false);
   useEffect(() => {
     setIsChildrenChunks(childrenChunks != null && childrenChunks.length > 0);
@@ -541,40 +514,13 @@ const ChunksPicker = ({ entryFile, className }) => {
         TransitionComponent={SlideTransition}
         message={snackBarMessage.current}
       />
-      <Dialog
-        fullWidth={true}
-        open={isDialog}
-        onClose={() => {
-          setIsDialog(false);
-        }}
-      >
-        <DialogTitle>Save Collection</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Name"
-            error={!collectionName}
-            value={collectionName}
-            onChange={(e) => setCollectionName(e.target.value)}
-            variant="outlined"
-            fullWidth={true}
-            required
-            margin="normal"
-          />
-          <TextField
-            label="Description"
-            variant="outlined"
-            fullWidth={true}
-            value={collectionDescription}
-            onChange={(e) => setCollectionDescription(e.target.value)}
-            margin="normal"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleSaveCollection} color="primary">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <SaveCollectionForm
+        isDialog={isDialog}
+        setIsDialog={setIsDialog}
+        selectedChunks={selectedChunks}
+        snackBarMessage={snackBarMessage}
+        setSnackbarVisibility={setSnackbarVisibility}
+      />
     </Box>
   ) : (
     <></>
