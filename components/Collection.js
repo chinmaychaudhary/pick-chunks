@@ -58,14 +58,17 @@ const Collection = ({ dataReceived }) => {
   }
   // chosenCollection object's name is used as unique id to get the collection name,as name property is used as key on server-side
   // and this chsenItem's name property is used to get the description and chunks from fetched data
-  const [chosenCollection, setchosenCollection] = useState({ name: defaultStateName });
+  const [chosenCollection, setChosenCollection] = useState({ name: defaultStateName });
   const chooseCollection = (name) => {
     if (name != chosenCollection.name) {
-      setchosenCollection({ name: name });
+      setChosenCollection({ name: name });
     }
   };
 
   const getCollectionObject = (objects, name) => {
+    if (!objects.length) {
+      return {};
+    }
     const chosenCollectionObject = objects.find((object) => object.name === name);
     return chosenCollectionObject;
   };

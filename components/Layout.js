@@ -58,7 +58,7 @@ const routesToName = {
 const Layout = ({ children }) => {
   const classes = useStyles();
   const router = useRouter();
-  const [selectedlink, setSelectedLink] = useState(router.pathname);
+  const selectedlink = router.pathname;
   const [isDialog, setIsDialog] = useState(false);
   // used to fetch the version which is shown in about tab
   const { data: version, loading: isVersionLoading } = useFetch('/version');
