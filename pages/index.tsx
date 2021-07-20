@@ -85,32 +85,26 @@ function Add() {
 
   const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
   const [dataLoading, setDataLoading] = useState(true);
-  const [storedFiles, setStoredFiles] = useLocalStorage('files', []);
+  const [storedFiles, setStoredFiles] = useState([] as any);
   useEffect(() => {
-    if (!storedFiles.length) {
-      setDataLoading(true);
-      fetch('api/files')
-        .then((res) => res.json())
-        .then((dataReceived) => {
-          if (dataReceived) {
-            var files: { filepath: any; name: string }[] = [];
-            (dataReceived as any).files.forEach((item: any) => {
-              const relPath = relativePath(item, (dataReceived as any)?.directory);
-              files.push({
-                filepath: item,
-                name: relPath,
-              });
+    setDataLoading(true);
+    fetch('api/files')
+      .then((res) => res.json())
+      .then((dataReceived) => {
+        if (dataReceived) {
+          var files: { filepath: any; name: string }[] = [];
+          (dataReceived as any).files.forEach((item: any) => {
+            const relPath = relativePath(item, (dataReceived as any)?.directory);
+            files.push({
+              filepath: item,
+              name: relPath,
             });
-            setStoredFiles(files); // fetched data stored in localstorage
-            setEntryFile(files[0]);
-            setDataLoading(false);
-          }
-        });
-    } else {
-      setEntryFile(storedFiles[0]); // set entry file to first file
-      setDataLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+          });
+          setStoredFiles(files);
+          setEntryFile(files[0]);
+          setDataLoading(false);
+        }
+      });
   }, []);
 
   return (
