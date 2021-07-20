@@ -3,6 +3,7 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import Popover from '@material-ui/core/Popover';
 import IconButton from '@material-ui/core/IconButton';
 import KeyboardOutlinedIcon from '@material-ui/icons/KeyboardOutlined';
+import RefreshIcon from '@material-ui/icons/RefreshOutlined';
 import Typography from '@material-ui/core/Typography';
 import Skeleton from '@material-ui/lab/Skeleton';
 import Box from '@material-ui/core/Box';
@@ -15,6 +16,7 @@ import { EntryFilePicker } from '../components/EntryFilePicker';
 import { ChunksPicker } from '../components/ChunksPicker';
 import Layout from '../components/Layout';
 import { useLocalStorage } from '../components/customHooks/useLocalStorage';
+import { Grid } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
   flexNone: { flex: '0 0 auto' },
@@ -113,6 +115,13 @@ function Add() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const [refreshStatus, setRefreshStatus] = useState(false);
+  const handleRefreshClick = async () => {
+    setRefreshStatus(true);
+    await fetch('/api/refresh');
+    setRefreshStatus(false);
+  };
+
   return (
     <Box>
       <Layout>
@@ -172,12 +181,21 @@ function Add() {
             </Typography>
           ) : (
             <>
-              <EntryFilePicker
-                className={classes.flexNone}
-                entryFile={entryFile}
-                onEntryFileChange={setEntryFile}
-                allFiles={storedFiles}
-              />
+              <Grid container spacing={2}>
+                <Grid item xs>
+                  <EntryFilePicker
+                    className={classes.flexNone}
+                    entryFile={entryFile}
+                    onEntryFileChange={setEntryFile}
+                    allFiles={storedFiles}
+                  />
+                </Grid>
+                <Grid item xs={1}>
+                  <IconButton onClick={handleRefreshClick} disabled={refreshStatus}>
+                    <RefreshIcon></RefreshIcon>
+                  </IconButton>
+                </Grid>
+              </Grid>
               <ChunksPicker className={classes.flex1} entryFile={entryFile} />
             </>
           )}

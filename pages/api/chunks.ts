@@ -1,12 +1,11 @@
 import type { NextApiResponse } from 'next';
 import { getAllChunks } from '../../utils/getAllChunks';
+import { store } from '../../utils/chunksCache';
 
 type Data = {
   directory: string;
   pages: any;
 };
-
-const store: any = {};
 
 export default async function handler(req: any, res: NextApiResponse<Data>) {
   if (req.method === 'POST') {
