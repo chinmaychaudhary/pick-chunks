@@ -17,12 +17,7 @@ export default async function handler(req: any, res: NextApiResponse<Data>) {
       return;
     }
 
-    const tree = await getAllChunks(body.path, req.srcDir, body.getDescendant || false).then(
-      (tree: Record<string, any>) => {
-        clearStore();
-        return tree;
-      }
-    );
+    const tree = await getAllChunks(body.path, req.srcDir, body.getDescendant || false);
     const response = JSON.stringify(
       {
         tree,
