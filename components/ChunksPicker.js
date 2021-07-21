@@ -97,23 +97,19 @@ const ChunksPicker = ({ entryFile, className }) => {
 
   // children chunks are used in showing the children chunks of recently selected chunk
   const fetchChildrenChunks = async (path) => {
-    const response = await fetch('api/chunks', createPostReqOptions({ path: path, getDescendant: true }));
+    if (!path) {
+      return [];
+    }
+    const response = await fetch('api/chunks', createPostReqOptions({ path: path, getDescendant: false }));
     const data = await response.json();
-    return new Promise((resolve, reject) => {
-      if (data?.chunks) {
-        const chunkWithName = data.chunks;
-        resolve(chunkWithName);
-      } else {
-        reject('Chunks is not an attribute!');
-      }
-    });
+    const chunkWithName = data.chunks;
+    return chunkWithName;
   };
 
   const { isLoading: isLoadingChunks, data: childrenChunks } = useQuery(
     'getChunks' + crumbs[crumbs.length - 1].filepath,
     () => fetchChildrenChunks(crumbs[crumbs.length - 1].filepath)
   );
-
   // processing is used to handle subgraph add and remove's loading state
   const [processing, setProcessing] = useState(false);
   // used for search chunks fuzzy search variable
