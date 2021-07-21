@@ -38,7 +38,7 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
     plugins: ['jsx', 'typescript', 'classProperties', 'exportDefaultFrom'],
   });
 
-  const { staticImports, dynamicImports, chunkNameToPath } = getImports(ast);
+  const { staticImports, dynamicImports, chunkPathToName } = getImports(ast);
 
   const chunks = new Map();
   const children: any = [];
@@ -62,13 +62,13 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
       }
 
       if (isRelative) {
-        chunks.set(pathToChunk, chunkNameToPath[chunk as string] || relative(root, pathToChunk));
+        chunks.set(pathToChunk, chunkPathToName[chunk as string] || relative(root, pathToChunk));
 
         if (getDescendant) {
           children.push(getAllChunks(pathToChunk, root, getDescendant));
         }
       } else if (isFromRoot) {
-        chunks.set(pathToChunkWithRoot, chunkNameToPath[chunk as string] || relative(root, pathToChunkWithRoot));
+        chunks.set(pathToChunkWithRoot, chunkPathToName[chunk as string] || relative(root, pathToChunkWithRoot));
 
         if (getDescendant) {
           children.push(getAllChunks(pathToChunkWithRoot, root, getDescendant));
@@ -128,7 +128,7 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
 const getImports = (ast: File) => {
   const staticImports: string[] = [];
   const dynamicImports = new Set();
-  const chunkNameToPath: any = {};
+  const chunkPathToName: any = {};
 
   traverse(ast, {
     ImportDeclaration(path: any) {
@@ -148,14 +148,14 @@ const getImports = (ast: File) => {
             const chunkNameComment = comment.value.replace("'", '"');
             if (chunkNameComment.includes('webpackChunkName')) {
               // Assuming webpackChunkName comment to be of format /* webpackChunkName: "name" */
-              chunkNameToPath[filePath] = chunkNameComment.split('"')[1];
+              chunkPathToName[filePath] = chunkNameComment.split('"')[1];
               dynamicImports.add(filePath);
               return;
             }
           }
         }
 
-        chunkNameToPath[filePath] = undefined;
+        chunkPathToName[filePath] = undefined;
         dynamicImports.add(filePath);
       }
     },
@@ -174,6 +174,6 @@ const getImports = (ast: File) => {
   return {
     staticImports,
     dynamicImports,
-    chunkNameToPath,
+    chunkPathToName,
   };
 };
