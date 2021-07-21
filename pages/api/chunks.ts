@@ -1,5 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAllChunks, clearStore } from '../../utils/getAllChunks';
+import type { NextApiResponse } from 'next';
+import { getAllChunks } from '../../utils/getAllChunks';
+import { store } from '../../utils/chunksCache';
 
 type Data = {
   directory: string;
@@ -9,12 +10,13 @@ type Data = {
 export default async function handler(req: any, res: NextApiResponse<Data>) {
   if (req.method === 'POST') {
     const body = req.body;
-    const tree = await getAllChunks(body.path, req.srcDir, body.getDescendant || false).then(
-      (tree: Record<string, any>) => {
-        clearStore();
-        return tree;
-      }
-    );
+
+    if (store[body.path] !== undefined && store[body.path][body.getDescendant || false] !== undefined) {
+      res.json(store[body.path][body.getDescendant || false]);
+      return;
+    }
+
+    const tree = await getAllChunks(body.path, req.srcDir, body.getDescendant || false);
     const response = JSON.stringify(
       {
         tree,
@@ -32,6 +34,13 @@ export default async function handler(req: any, res: NextApiResponse<Data>) {
         return value;
       }
     );
+
+    if (!store[body.path]) {
+      store[body.path] = {};
+    }
+
+    store[body.path][body.getDescendant || false] = JSON.parse(response);
+
     res.json(JSON.parse(response));
   }
 }
