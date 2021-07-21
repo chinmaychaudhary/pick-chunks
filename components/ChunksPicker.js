@@ -26,7 +26,7 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
 import { HomeOutlined } from '@material-ui/icons';
-
+import { useQuery } from 'react-query';
 import SaveCollectionForm from '../components/SaveCollectionForm';
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
@@ -96,24 +96,26 @@ const ChunksPicker = ({ entryFile, className }) => {
   }, []);
 
   // children chunks are used in showing the children chunks of recently selected chunk
-  // childrenChunks :[{filepath: string, chunkName: string}]
-  const [childrenChunks, setChildrenChunks] = useState(null);
-  // isLoading is used to handle empty state of chunks
-  const [isLoadingChunks, setIsLoadingChunks] = useState(false);
-
-  useEffect(() => {
-    const path = crumbs[crumbs.length - 1].filepath;
-    if (!path) return;
-    setIsLoadingChunks(true);
-    fetch('/api/chunks', createPostReqOptions({ path: path }))
-      .then((response) => response.json())
-      .then((data) => {
+  // ERROR ERROR !!!! Passing path as "" causing POST REQ ERROR
+  const fetchChildrenChunks = async (path) => {
+    //console.log('fetched for', path);
+    const response = await fetch('api/chunks', createPostReqOptions({ path: path, getDescendant: true }));
+    const data = await response.json();
+    return new Promise((resolve, reject) => {
+      if (data?.chunks) {
         const chunkWithName = data.chunks;
-        setChildrenChunks(chunkWithName);
-        setIsLoadingChunks(false);
-      })
-      .catch((err) => alert(err));
-  }, [crumbs]);
+        resolve(chunkWithName);
+      } else {
+        reject('Chunks is not an attribute!');
+      }
+    });
+  };
+
+  const { isLoading: isLoadingChunks, data: childrenChunks } = useQuery(
+    'getChunks' + crumbs[crumbs.length - 1].filepath,
+    () => fetchChildrenChunks(crumbs[crumbs.length - 1].filepath)
+  );
+  //console.log('useQuery', childrenChunks);
 
   // processing is used to handle subgraph add and remove's loading state
   const [processing, setProcessing] = useState(false);
