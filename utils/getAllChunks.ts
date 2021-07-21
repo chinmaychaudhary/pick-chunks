@@ -4,18 +4,25 @@ import { File } from '@babel/types';
 import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname, relative } from 'path';
 
-let store: Record<string, any> = {};
+let store: Record<string, any> = {
+  shallow: {},
+  deep: {},
+};
 const extensions = ['.js', '.ts', '.tsx', '/index.js', '/index.ts', '/index.tsx'];
 
 export const clearStore = () => {
-  store = {};
+  store = {
+    shallow: {},
+    deep: {},
+  };
 };
 
 export const getAllChunks = (path: string, root: string, getDescendant: boolean = false): Record<string, any> => {
   path = resolve(root, path);
+  const descendant = getDescendant ? 'deep' : 'shallow';
 
   // path is considered cyclic as it is visited but not completed execution
-  if (store[path] === null) {
+  if (store[descendant][path] === null) {
     return Promise.resolve({
       path,
       children: [],
@@ -24,11 +31,11 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
     });
   }
 
-  if (store[path] !== undefined) {
-    return Promise.resolve(store[path]);
+  if (store[descendant][path] !== undefined) {
+    return Promise.resolve(store[descendant][path]);
   }
 
-  store[path] = null;
+  store[descendant][path] = null;
 
   const cwd = dirname(path);
 
@@ -114,13 +121,13 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
         },
         [...chunks]
       );
-      store[path] = {
+      store[descendant][path] = {
         path,
         chunks: new Map(allChunks),
         children: childChunks,
       };
 
-      resolve(store[path]);
+      resolve(store[descendant][path]);
     });
   });
 };
