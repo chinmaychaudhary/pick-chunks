@@ -96,9 +96,7 @@ const ChunksPicker = ({ entryFile, className }) => {
   }, []);
 
   // children chunks are used in showing the children chunks of recently selected chunk
-  // ERROR ERROR !!!! Passing path as "" causing POST REQ ERROR
   const fetchChildrenChunks = async (path) => {
-    //console.log('fetched for', path);
     const response = await fetch('api/chunks', createPostReqOptions({ path: path, getDescendant: true }));
     const data = await response.json();
     return new Promise((resolve, reject) => {
@@ -115,7 +113,6 @@ const ChunksPicker = ({ entryFile, className }) => {
     'getChunks' + crumbs[crumbs.length - 1].filepath,
     () => fetchChildrenChunks(crumbs[crumbs.length - 1].filepath)
   );
-  //console.log('useQuery', childrenChunks);
 
   // processing is used to handle subgraph add and remove's loading state
   const [processing, setProcessing] = useState(false);
