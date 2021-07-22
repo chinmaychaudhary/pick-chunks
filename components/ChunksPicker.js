@@ -26,7 +26,7 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
 import { HomeOutlined } from '@material-ui/icons';
-
+import { useQuery } from 'react-query';
 import SaveCollectionForm from '../components/SaveCollectionForm';
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
@@ -96,25 +96,20 @@ const ChunksPicker = ({ entryFile, className }) => {
   }, []);
 
   // children chunks are used in showing the children chunks of recently selected chunk
-  // childrenChunks :[{filepath: string, chunkName: string}]
-  const [childrenChunks, setChildrenChunks] = useState(null);
-  // isLoading is used to handle empty state of chunks
-  const [isLoadingChunks, setIsLoadingChunks] = useState(false);
+  const fetchChildrenChunks = async (path) => {
+    if (!path) {
+      return [];
+    }
+    const response = await fetch('api/chunks', createPostReqOptions({ path: path, getDescendant: false }));
+    const data = await response.json();
+    const chunkWithName = data.chunks;
+    return chunkWithName;
+  };
 
-  useEffect(() => {
-    const path = crumbs[crumbs.length - 1].filepath;
-    if (!path) return;
-    setIsLoadingChunks(true);
-    fetch('/api/chunks', createPostReqOptions({ path: path }))
-      .then((response) => response.json())
-      .then((data) => {
-        const chunkWithName = data.chunks;
-        setChildrenChunks(chunkWithName);
-        setIsLoadingChunks(false);
-      })
-      .catch((err) => alert(err));
-  }, [crumbs]);
-
+  const { isLoading: isLoadingChunks, data: childrenChunks } = useQuery(
+    'getChunks' + crumbs[crumbs.length - 1].filepath,
+    () => fetchChildrenChunks(crumbs[crumbs.length - 1].filepath)
+  );
   // processing is used to handle subgraph add and remove's loading state
   const [processing, setProcessing] = useState(false);
   // used for search chunks fuzzy search variable

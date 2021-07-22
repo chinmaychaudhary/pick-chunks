@@ -17,6 +17,7 @@ import { ChunksPicker } from '../components/ChunksPicker';
 import Layout from '../components/Layout';
 import { useLocalStorage } from '../components/customHooks/useLocalStorage';
 import { Grid } from '@material-ui/core';
+import { useQuery } from 'react-query';
 
 const useStyles = makeStyles((theme) => ({
   flexNone: { flex: '0 0 auto' },
@@ -87,27 +88,29 @@ function Add() {
 
   const [entryFile, setEntryFile] = useState({ filepath: '', name: '' });
   const [dataLoading, setDataLoading] = useState(true);
-  const [storedFiles, setStoredFiles] = useState([] as any);
-  useEffect(() => {
-    setDataLoading(true);
-    fetch('api/files')
-      .then((res) => res.json())
-      .then((dataReceived) => {
-        if (dataReceived) {
-          var files: { filepath: any; name: string }[] = [];
-          (dataReceived as any).files.forEach((item: any) => {
-            const relPath = relativePath(item, (dataReceived as any)?.directory);
-            files.push({
-              filepath: item,
-              name: relPath,
-            });
-          });
-          setStoredFiles(files);
-          setEntryFile(files[0]);
-          setDataLoading(false);
-        }
+  const fetchFiles = async () => {
+    const res = await fetch('api/files');
+    const dataReceived = await res.json();
+    if (dataReceived) {
+      var files: { filepath: any; name: string }[] = [];
+      (dataReceived as any).files.forEach((item: any) => {
+        const relPath = relativePath(item, (dataReceived as any)?.directory);
+        files.push({
+          filepath: item,
+          name: relPath,
+        });
       });
-  }, []);
+      return files;
+    }
+  };
+
+  const { data: storedFiles } = useQuery('/api/files', fetchFiles);
+  useEffect(() => {
+    if (storedFiles) {
+      setEntryFile(storedFiles[0]);
+      setDataLoading(false);
+    }
+  }, [storedFiles]);
 
   const [refreshStatus, setRefreshStatus] = useState(false);
   const handleRefreshClick = async () => {
