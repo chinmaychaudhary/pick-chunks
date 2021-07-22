@@ -1,6 +1,6 @@
 {
   "name": "@pick-chunks/pc",
-  "version": "0.2.9",
+  "version": "1.0.0",
   "bin": {
     "pc": "index.js"
   },

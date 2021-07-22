@@ -154,7 +154,7 @@ const Collection = ({ dataReceived }) => {
             </Box>
             <Box
               overflow="auto"
-              flexGrow={1}
+              width="60%"
               minHeight="40vh"
               borderRadius="borderRadius"
               border="1px solid white"
