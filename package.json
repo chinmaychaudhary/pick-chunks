@@ -12,7 +12,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "publish": "yarn build && yarn np --access public"
+    "release": "yarn build && yarn np"
   },
   "dependencies": {
     "@babel/generator": "^7.14.5",
