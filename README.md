@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-yarn add -D @pick-chunks/pc
+yarn add -D @devxm/pick-chunks
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ yarn add -D @pick-chunks/pc
 The pick chunks is launched from terminal after installation.
 
 ```bash
-yarn pc <options>
+yarn devxm-pick-chunks <options>
 ```
 
 Options supported includes
