@@ -1,6 +1,6 @@
 {
   "name": "@devxm/pick-chunks",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "bin": {
     "devxm-pick-chunks": "index.js"
   },
