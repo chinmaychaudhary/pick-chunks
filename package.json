@@ -1,6 +1,6 @@
 {
   "name": "@devxm/pick-chunks",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "bin": {
     "devxm-pick-chunks": "index.js"
   },
@@ -31,7 +31,7 @@
     "fuzzy-search": "^3.2.1",
     "glob": "^7.1.7",
     "glob-promise": "^4.2.0",
-    "next": "11.0.1",
+    "next": "12.1.6",
     "open": "^8.2.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
