@@ -4,25 +4,48 @@ import { File } from '@babel/types';
 import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname, relative } from 'path';
 
+// store object
 let store: Record<string, any> = {
-  shallow: {},
-  deep: {},
+  shallow: {
+    skip: {},
+    noskip: {}
+  },
+  deep: {
+    skip: {},
+    noskip: {}
+  },
 };
-const extensions = ['.js', '.ts', '.tsx', '/index.js', '/index.ts', '/index.tsx'];
 
+
+const extensions = ['.js', '.ts', '.tsx', '/index.js', '/index.ts', '/index.tsx'];
 export const clearStore = () => {
   store = {
-    shallow: {},
-    deep: {},
+    shallow: {
+    skip: {},
+    noskip: {}
+  },
+  deep: {
+    skip: {},
+    noskip: {}
+  },
   };
 };
 
-export const getAllChunks = (path: string, root: string, getDescendant: boolean = false): Record<string, any> => {
+
+
+
+export const getAllChunks = (path: string, root: string, getDescendant: boolean = false,skipImportWithoutChunkName:boolean): Record<string, any> => {
+
+  //resolving path to absolute path 
   path = resolve(root, path);
+
+
   const descendant = getDescendant ? 'deep' : 'shallow';
+  const skipLabel = skipImportWithoutChunkName ? "skip" : "noskip";
+
 
   // path is considered cyclic as it is visited but not completed execution
-  if (store[descendant][path] === null) {
+  if (store[descendant][skipLabel][path] === null) {
     return Promise.resolve({
       path,
       children: [],
@@ -31,21 +54,25 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
     });
   }
 
-  if (store[descendant][path] !== undefined) {
-    return Promise.resolve(store[descendant][path]);
+  //if already calculated then return it
+  if (store[descendant][skipLabel][path] !== undefined) {
+    return Promise.resolve(store[descendant][skipLabel][path]);
   }
 
-  store[descendant][path] = null;
+
+  store[descendant][skipLabel][path] = null;
 
   const cwd = dirname(path);
-
   const code = readFileSync(path).toString();
   const ast = parser.parse(code, {
     sourceType: 'module',
     plugins: ['jsx', 'typescript', 'classProperties', 'exportDefaultFrom'],
   });
 
-  const { staticImports, dynamicImports, chunkPathToName } = getImports(ast);
+
+  // Calculating all imports from the ast
+  const { staticImports, dynamicImports, chunkPathToName } = getImports(ast,skipImportWithoutChunkName);
+
 
   const chunks = new Map();
   const children: any = [];
@@ -60,6 +87,7 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
       const pathToChunk = resolve(cwd, chunkPath);
       const pathToChunkWithRoot = resolve(root, chunkPath);
 
+
       const isRelative = chunkPath[0] === '.' && existsSync(pathToChunk);
       const isFromRoot = chunkPath[0] !== '.' && existsSync(pathToChunkWithRoot);
 
@@ -70,21 +98,20 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
 
       if (isRelative) {
         chunks.set(pathToChunk, chunkPathToName[chunk as string] || relative(root, pathToChunk));
-
         if (getDescendant) {
-          children.push(getAllChunks(pathToChunk, root, getDescendant));
+          children.push(getAllChunks(pathToChunk, root, getDescendant,skipImportWithoutChunkName));
         }
-      } else if (isFromRoot) {
+      }
+      else if (isFromRoot) {
         chunks.set(pathToChunkWithRoot, chunkPathToName[chunk as string] || relative(root, pathToChunkWithRoot));
-
         if (getDescendant) {
-          children.push(getAllChunks(pathToChunkWithRoot, root, getDescendant));
+          children.push(getAllChunks(pathToChunkWithRoot, root, getDescendant,skipImportWithoutChunkName));
         }
       }
     }
   });
-
   dynamicImports.clear();
+
 
   // Traverse children of current path
   for (const staticImport of staticImports) {
@@ -106,12 +133,13 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
       }
 
       if (isRelative) {
-        children.push(getAllChunks(pathToImport, root, getDescendant));
+        children.push(getAllChunks(pathToImport, root, getDescendant,skipImportWithoutChunkName));
       } else if (isFromRoot) {
-        children.push(getAllChunks(pathToImportWithRoot, root, getDescendant));
+        children.push(getAllChunks(pathToImportWithRoot, root, getDescendant,skipImportWithoutChunkName));
       }
     }
   }
+
 
   return new Promise((resolve) => {
     Promise.all(children).then((childChunks) => {
@@ -121,18 +149,22 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
         },
         [...chunks]
       );
-      store[descendant][path] = {
+      store[descendant][skipLabel][path] = {
         path,
         chunks: new Map(allChunks),
         children: childChunks,
       };
-
-      resolve(store[descendant][path]);
+      resolve(store[descendant][skipLabel][path]);
     });
   });
 };
 
-const getImports = (ast: File) => {
+
+
+
+
+// fetching all the static dynamic imports and chunk names
+const getImports = (ast: File,skipImportWithoutChunkName:boolean) => {
   const staticImports: string[] = [];
   const dynamicImports = new Set();
   const chunkPathToName: any = {};
@@ -162,8 +194,11 @@ const getImports = (ast: File) => {
           }
         }
 
-        chunkPathToName[filePath] = undefined;
-        dynamicImports.add(filePath);
+        if (skipImportWithoutChunkName === false)
+        {
+          chunkPathToName[filePath] = undefined;
+          dynamicImports.add(filePath);
+        }
       }
     },
     ExportNamedDeclaration(path: any) {

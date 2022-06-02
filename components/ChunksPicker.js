@@ -8,6 +8,8 @@ import FuzzySearch from 'fuzzy-search';
 
 import { motion } from 'framer-motion';
 
+import FileCopyRoundedIcon from '@material-ui/icons/FileCopyRounded';
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { makeStyles } from '@material-ui/core/styles';
 import Link from '@material-ui/core/Link';
 import Box from '@material-ui/core/Box';
@@ -28,6 +30,7 @@ import SaveIcon from '@material-ui/icons/Save';
 import { HomeOutlined } from '@material-ui/icons';
 import { useQuery } from 'react-query';
 import SaveCollectionForm from '../components/SaveCollectionForm';
+import { getLocationOrigin } from 'next/dist/shared/lib/utils';
 const useStyles = makeStyles((theme) => ({
   rootContainer: {
     cursor: (props) => (props.disabled ? 'not-allowed' : 'default'),
@@ -62,13 +65,22 @@ const createPostReqOptions = (obj) => {
     body: JSON.stringify(obj),
   };
 };
+
+
+// Chunks picker
 const ChunksPicker = ({ entryFile, className }) => {
   const classes = useStyles();
+
+  // checkBox for skipping the import without the name
+  const [skipBox, setSkipBox] = useState(false);
+
+
+
   // loads all descendent chunks
   const loadAllDescendantChunks = useCallback(
     (filepath) =>
       new Promise((resolve, reject) => {
-        fetch('api/chunks', createPostReqOptions({ path: filepath, getDescendant: true }))
+        fetch('api/chunks', createPostReqOptions({ path: filepath, getDescendant: true,skipImportWithoutChunkName:skipBox })) // request
           .then((res) => {
             return res.json();
           })
@@ -79,7 +91,7 @@ const ChunksPicker = ({ entryFile, className }) => {
           })
           .catch((err) => reject(err));
       }),
-    []
+    [skipBox]
   );
   // assumption: EntryFile is descided from api/files which has only filename as a parameter, so
   // the initial crumb which is entry file in pick entry, has chunkName set to its relative filepath.
@@ -100,14 +112,14 @@ const ChunksPicker = ({ entryFile, className }) => {
     if (!path) {
       return [];
     }
-    const response = await fetch('api/chunks', createPostReqOptions({ path: path, getDescendant: false }));
+    const response = await fetch('api/chunks', createPostReqOptions({ path: path, getDescendant: false,skipImportWithoutChunkName:skipBox }));
     const data = await response.json();
     const chunkWithName = data.chunks;
     return chunkWithName;
   };
 
   const { isLoading: isLoadingChunks, data: childrenChunks } = useQuery(
-    'getChunks' + crumbs[crumbs.length - 1].filepath,
+    'getChunks' + crumbs[crumbs.length - 1].filepath + skipBox,
     () => fetchChildrenChunks(crumbs[crumbs.length - 1].filepath)
   );
   // processing is used to handle subgraph add and remove's loading state
@@ -136,6 +148,13 @@ const ChunksPicker = ({ entryFile, className }) => {
   fcRef.current = filteredChunks;
   selectedChunksRef.current = selectedChunks;
   processingRef.current = processing;
+
+
+  //hnadling skip button 
+  const handleSkipBox = (e) => {
+    setSkipBox(cb => !cb);
+  };
+  
 
   const handleChunkEnter = useCallback((e) => {
     // e.currentTarget.dataset is used for list items to get the item
@@ -243,6 +262,29 @@ const ChunksPicker = ({ entryFile, className }) => {
   const [shouldShowSnackbar, setSnackbarVisibility] = useState(false);
   const snackBarMessage = useRef('');
   const hideSnackbar = useCallback(() => setSnackbarVisibility(false), []);
+
+
+
+  // handler for filtered copy, filters the chunks without name
+  const handleFilteredCopy = () => {
+    const extensions = ['.js', '.ts', '.tsx'];
+    const displayedChunks = Array.from(selectedChunks);
+    const filteredChunks = displayedChunks.filter((chunk) => {
+      for (let ext of extensions) {
+        if (chunk.endsWith(ext)) {
+          return false;
+        }
+      }
+      return true;
+    });
+    snackBarMessage.current = `${filteredChunks.length} chunks copied`;
+    navigator.clipboard.writeText(filteredChunks.join()).then(() => setSnackbarVisibility(true));
+  }
+
+
+
+
+
   const handleCopy = useCallback(() => {
     //eslint-disable-next-line
     snackBarMessage.current = `${selectedChunks.size} chunks copied`;
@@ -310,7 +352,17 @@ const ChunksPicker = ({ entryFile, className }) => {
     setIsChildrenChunks(childrenChunks != null && childrenChunks.length > 0);
   }, [childrenChunks]);
 
+
+  
+
   return !!crumbs[crumbs.length - 1]?.filepath || !!selectedChunks.size ? (
+    <>
+      {/* Skip button for without name imports */}
+      <FormControlLabel
+      control={<Checkbox checked={skipBox} onChange={handleSkipBox} />}
+      label="Skip"
+    />
+    
     <Box mt={2} className={className} display="flex" flexDirection="column">
       <Box display="flex" flex="1" minHeight={0} className={classes.rootContainer} disabled={processing}>
         <Box
@@ -369,7 +421,16 @@ const ChunksPicker = ({ entryFile, className }) => {
             />
 
             {/*Buttons to perform delete or copy on above TextField, save collection for selected chunks */}
-            <Box ml="auto">
+              <Box ml="auto">
+                
+                {
+                  skipBox?<></>:<>
+                  <IconButton disabled={!selectedChunks.size} onClick={handleFilteredCopy} aria-label="Filtered copy">
+                  <FileCopyRoundedIcon />
+                  </IconButton>
+                  </>
+                }
+                
               <IconButton disabled={!selectedChunks.size} onClick={handleCopy} aria-label="copy">
                 <FileCopyOutlinedIcon />
               </IconButton>
@@ -385,6 +446,7 @@ const ChunksPicker = ({ entryFile, className }) => {
               >
                 <SaveIcon />
               </IconButton>
+
             </Box>
           </Box>
           {/* 3. List of chunks and chips */}
@@ -499,7 +561,8 @@ const ChunksPicker = ({ entryFile, className }) => {
         snackBarMessage={snackBarMessage}
         setSnackbarVisibility={setSnackbarVisibility}
       />
-    </Box>
+      </Box>
+      </>
   ) : (
     <></>
   );
