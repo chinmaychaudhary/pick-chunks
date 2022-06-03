@@ -7,20 +7,15 @@ type Data = {
   pages: any;
 };
 
-
-
 export default async function handler(req: any, res: NextApiResponse<Data>) {
   if (req.method === 'POST') {
     
     const body = req.body;
-
     if (store[body.path] !== undefined && store[body.path][body.getDescendant || false] !== undefined && store[body.path][body.getDescendant || false][body.skipImportWithoutChunkName || false] !== undefined) {
       res.json(store[body.path][body.getDescendant || false][body.skipImportWithoutChunkName || false]);
       return;
     }
 
-
-    
     const tree = await getAllChunks(body.path, req.srcDir, body.getDescendant || false,body.skipImportWithoutChunkName);
     const response = JSON.stringify(
       {
@@ -44,7 +39,6 @@ export default async function handler(req: any, res: NextApiResponse<Data>) {
     if (!store[body.path]) {
         store[body.path] = {};
     }
-
     if (store[body.path][body.getDescendant || false] === undefined) {
         store[body.path][body.getDescendant || false] = {};
     }

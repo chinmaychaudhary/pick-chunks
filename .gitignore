@@ -36,3 +36,6 @@ yarn-error.log*
 
 # pick-chunks
 pick-chunks.config.js
+
+#package files 
+package-lock.json

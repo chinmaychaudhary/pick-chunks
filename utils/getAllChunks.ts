@@ -3,49 +3,42 @@ import traverse from '@babel/traverse';
 import { File } from '@babel/types';
 import { existsSync, readFileSync } from 'fs';
 import { resolve, dirname, relative } from 'path';
+import { extensions } from "../constants/extensions"
 
 // store object
 let store: Record<string, any> = {
   shallow: {
-    skip: {},
-    noskip: {}
+    skipUnnamedChunks: {},
+    keepUnnamedChunks: {}
   },
   deep: {
-    skip: {},
-    noskip: {}
+    skipUnnamedChunks: {},
+    keepUnnamedChunks: {}
   },
 };
 
-
-const extensions = ['.js', '.ts', '.tsx', '/index.js', '/index.ts', '/index.tsx'];
 export const clearStore = () => {
   store = {
     shallow: {
-    skip: {},
-    noskip: {}
-  },
-  deep: {
-    skip: {},
-    noskip: {}
-  },
+      skipUnnamedChunks: {},
+      keepUnnamedChunks: {}
+    },
+    deep: {
+      skipUnnamedChunks: {},
+      keepUnnamedChunks: {}
+    },
   };
 };
 
-
-
-
-export const getAllChunks = (path: string, root: string, getDescendant: boolean = false,skipImportWithoutChunkName:boolean): Record<string, any> => {
+export const getAllChunks = (path: string, root: string, getDescendant: boolean = false, skipImportWithoutChunkName: boolean): Record<string, any> => {
 
   //resolving path to absolute path 
   path = resolve(root, path);
-
-
   const descendant = getDescendant ? 'deep' : 'shallow';
-  const skipLabel = skipImportWithoutChunkName ? "skip" : "noskip";
-
+  const unnamedChunks = skipImportWithoutChunkName ? "skipUnnamedChunks" : "keepUnnamedChunks";
 
   // path is considered cyclic as it is visited but not completed execution
-  if (store[descendant][skipLabel][path] === null) {
+  if (store[descendant][unnamedChunks][path] === null) {
     return Promise.resolve({
       path,
       children: [],
@@ -54,14 +47,12 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
     });
   }
 
-  //if already calculated then return it
-  if (store[descendant][skipLabel][path] !== undefined) {
-    return Promise.resolve(store[descendant][skipLabel][path]);
+  //if chunks for given combination of descendant, skipUnnamedChunks and path is already calculated then return it
+  if (store[descendant][unnamedChunks][path] !== undefined) {
+    return Promise.resolve(store[descendant][unnamedChunks][path]);
   }
 
-
-  store[descendant][skipLabel][path] = null;
-
+  store[descendant][unnamedChunks][path] = null;
   const cwd = dirname(path);
   const code = readFileSync(path).toString();
   const ast = parser.parse(code, {
@@ -69,10 +60,7 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
     plugins: ['jsx', 'typescript', 'classProperties', 'exportDefaultFrom'],
   });
 
-
-  // Calculating all imports from the ast
-  const { staticImports, dynamicImports, chunkPathToName } = getImports(ast,skipImportWithoutChunkName);
-
+  const { staticImports, dynamicImports, chunkPathToName } = getImports(ast, skipImportWithoutChunkName);
 
   const chunks = new Map();
   const children: any = [];
@@ -87,7 +75,6 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
       const pathToChunk = resolve(cwd, chunkPath);
       const pathToChunkWithRoot = resolve(root, chunkPath);
 
-
       const isRelative = chunkPath[0] === '.' && existsSync(pathToChunk);
       const isFromRoot = chunkPath[0] !== '.' && existsSync(pathToChunkWithRoot);
 
@@ -99,13 +86,13 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
       if (isRelative) {
         chunks.set(pathToChunk, chunkPathToName[chunk as string] || relative(root, pathToChunk));
         if (getDescendant) {
-          children.push(getAllChunks(pathToChunk, root, getDescendant,skipImportWithoutChunkName));
+          children.push(getAllChunks(pathToChunk, root, getDescendant, skipImportWithoutChunkName));
         }
       }
       else if (isFromRoot) {
         chunks.set(pathToChunkWithRoot, chunkPathToName[chunk as string] || relative(root, pathToChunkWithRoot));
         if (getDescendant) {
-          children.push(getAllChunks(pathToChunkWithRoot, root, getDescendant,skipImportWithoutChunkName));
+          children.push(getAllChunks(pathToChunkWithRoot, root, getDescendant, skipImportWithoutChunkName));
         }
       }
     }
@@ -133,13 +120,12 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
       }
 
       if (isRelative) {
-        children.push(getAllChunks(pathToImport, root, getDescendant,skipImportWithoutChunkName));
+        children.push(getAllChunks(pathToImport, root, getDescendant, skipImportWithoutChunkName));
       } else if (isFromRoot) {
-        children.push(getAllChunks(pathToImportWithRoot, root, getDescendant,skipImportWithoutChunkName));
+        children.push(getAllChunks(pathToImportWithRoot, root, getDescendant, skipImportWithoutChunkName));
       }
     }
   }
-
 
   return new Promise((resolve) => {
     Promise.all(children).then((childChunks) => {
@@ -149,22 +135,19 @@ export const getAllChunks = (path: string, root: string, getDescendant: boolean 
         },
         [...chunks]
       );
-      store[descendant][skipLabel][path] = {
+      store[descendant][unnamedChunks][path] = {
         path,
         chunks: new Map(allChunks),
         children: childChunks,
       };
-      resolve(store[descendant][skipLabel][path]);
+      resolve(store[descendant][unnamedChunks][path]);
     });
   });
 };
 
 
-
-
-
 // fetching all the static dynamic imports and chunk names
-const getImports = (ast: File,skipImportWithoutChunkName:boolean) => {
+const getImports = (ast: File, skipImportWithoutChunkName: boolean) => {
   const staticImports: string[] = [];
   const dynamicImports = new Set();
   const chunkPathToName: any = {};
@@ -194,8 +177,7 @@ const getImports = (ast: File,skipImportWithoutChunkName:boolean) => {
           }
         }
 
-        if (skipImportWithoutChunkName === false)
-        {
+        if (!skipImportWithoutChunkName) {
           chunkPathToName[filePath] = undefined;
           dynamicImports.add(filePath);
         }
