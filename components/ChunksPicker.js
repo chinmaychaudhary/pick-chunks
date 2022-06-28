@@ -23,13 +23,13 @@ import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import Chip from '@material-ui/core/Chip';
 import SaveIcon from '@material-ui/icons/Save';
+import { Tooltip } from '@material-ui/core';
 import { HomeOutlined } from '@material-ui/icons';
 import { useQuery } from 'react-query';
 import SaveCollectionForm from '../components/SaveCollectionForm';
 import { extensions } from "../constants/extensions";
 
-const removeUnnamedChunks = function (chunks) {
-  const currentSelectedChunks = Array.from(chunks);
+const removeUnnamedChunks = (currentSelectedChunks) => {
   const filteredChunks = currentSelectedChunks.filter(chunk => !extensions.some((extension) => chunk.endsWith(extension)));
   return filteredChunks;
 }
@@ -406,18 +406,25 @@ const ChunksPicker = ({ entryFile, className }) => {
               <Box ml="auto">
                 {/* Filter copy button, only copies the chunks with chunk name */}
                 {
-                  skipImportWithoutChunkName ? null : (<>
+                skipImportWithoutChunkName ? null : (<>
+                  <Tooltip title="Copy Named chunks" placement='top'>
                   <IconButton disabled={!adaptedChunks.length} onClick={handleCopyImportWithChunk} aria-label="copy without files">
                   <FileCopyRoundedIcon />
-                  </IconButton>
+                    </IconButton>
+                  </Tooltip>
                 </>)
-                }
+              }
+              <Tooltip title="Copy Selected Chunks" placement='top'>
               <IconButton disabled={!adaptedChunks.length} onClick={handleCopy} aria-label="copy">
                 <FileCopyOutlinedIcon />
-              </IconButton>
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Delete Selected Chunks" placement='top'>
               <IconButton disabled={!adaptedChunks.length} onClick={handleDeselectAll} aria-label="deselect all">
                 <DeleteOutlineIcon />
-              </IconButton>
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Save Selected Chunks" placement='top'>
               <IconButton
                 disabled={!adaptedChunks.length}
                 onClick={() => {
@@ -426,7 +433,8 @@ const ChunksPicker = ({ entryFile, className }) => {
                 aria-label="save collection"
               >
                 <SaveIcon />
-              </IconButton>
+                </IconButton>
+                </Tooltip>
             </Box>
             </Box>
           {/* 3. List of chunks and chips */}
