@@ -1,0 +1,1 @@
+export const extensions = ['.js', '.ts', '.tsx', '/index.js', '/index.ts', '/index.tsx'];

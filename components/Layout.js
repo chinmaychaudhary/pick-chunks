@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
     width: 'calc(100vw - 60px)',
   },
   tab: {
-    minWidth: '60px',
+    minWidth: '60px !important',
     width: '60px',
     height: '60px',
   },
@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(2),
   },
   bottomTab: {
-    position: 'absolute',
+    position: 'absolute !important',
     bottom: 0,
   },
   tabs: {
@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const routesToName = {
-  '/': 'Selecter',
+  '/': 'Selector',
   '/dashboard': 'Collections',
 };
 
