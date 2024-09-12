@@ -127,6 +127,7 @@ const Collection = ({ dataReceived }) => {
           <Box display="flex" flexDirection="row" justifyContent="space-between">
             <Box
               width="35%"
+              flex="0 0 auto"
               //border="1px solid white"
               borderRadius="borderRadius"
               className={classes.listRoot}
@@ -154,7 +155,7 @@ const Collection = ({ dataReceived }) => {
             </Box>
             <Box
               overflow="auto"
-              width="60%"
+              flex="1 1 auto"
               minHeight="40vh"
               borderRadius="borderRadius"
               border="1px solid white"
